@@ -1,0 +1,39 @@
+# Node.js and dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment variables (DO NOT COMMIT THIS FILE)
+.env
+.env.local
+.env.*.local
+
+# Build directories
+dist/
+dist-ssr/
+build/
+
+# Frontend specific ignores
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Backend specific ignores
+backend/node_modules/
+backend/.env
+backend/.env.local
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Log files
+*.log

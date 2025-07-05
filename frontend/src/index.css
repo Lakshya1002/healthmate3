@@ -1,0 +1,66 @@
+/* =================================== */
+/* Global Styles & CSS Variables       */
+/* =================================== */
+
+/* A professional, dark-themed color palette.
+  This is the single source of truth for all colors in the application,
+  making it easy to change the entire look and feel from one place.
+*/
+:root {
+  /* Background Colors */
+  --bg-primary: #0a192f;   /* Deep space navy for the main background */
+  --bg-secondary: #172a45; /* A lighter navy for cards and surfaces */
+  
+  /* Text Colors */
+  --text-primary: #ccd6f6; /* A light, highly readable slate for body text */
+  --text-secondary: #8892b0;/* A softer slate for labels, placeholders, and subtitles */
+  --text-heading: #e6f1ff;  /* A brighter white for main headings */
+
+  /* Accent Colors (The "brand" colors) */
+  --accent-primary: #64ffda; /* A vibrant mint/cyan for primary actions and highlights */
+  --accent-primary-darker: #52d1b8; /* For hover states on primary actions */
+  --accent-danger: #ff79c6;   /* A clear but not jarring pink/red for delete/danger actions */
+  --accent-danger-darker: #f758b6;
+  --accent-edit: #8be9fd;     /* A calm blue for edit actions */
+  
+  /* Border & Utility Colors */
+  --card-border: rgba(136, 146, 176, 0.2); /* Subtle border for cards */
+  --focus-shadow: rgba(100, 255, 218, 0.2); /* Shadow for focused inputs */
+
+  /* Global Font Settings */
+  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.7;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Universal smooth scrolling */
+  scroll-behavior: smooth;
+}
+
+/* A modern CSS reset to ensure consistency across all browsers */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
