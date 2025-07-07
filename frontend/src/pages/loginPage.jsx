@@ -1,72 +1,54 @@
-// src/pages/LoginPage.jsx
-import React, { useState } from 'react';
-import { useAuth } from '../context/authContext';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// frontend/src/pages/LoginPage.jsx
 
-function LoginPage() {
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
+
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.password) {
-      toast.error('Please fill all fields');
-      return;
-    }
-
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
-      await login(form.email, form.password);
-      toast.success('Logged in successfully!');
+      await login({ email, password });
       navigate('/dashboard');
     } catch (err) {
-      toast.error('Login failed');
+      const message = err.response?.data?.message || 'Failed to log in. Please check your credentials.';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="card auth-card">
-        <h2>Welcome Back</h2>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="input-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="input-group">
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={handleChange}
-            />
-          </div>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-        <p className="auth-switch">
-          Don't have an account? <a href="/signup">Sign Up</a>
-        </p>
-      </div>
+    <div className="auth-container">
+      <h2>Sign In</h2>
+      <form onSubmit={handleSubmit}>
+        {error && <div className="error-message">{error}</div>}
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </div>
+        <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+      </form>
+      <p className="auth-link">
+        Don't have an account? <Link to="/signup">Sign Up</Link>
+      </p>
     </div>
   );
-}
+};
 
 export default LoginPage;

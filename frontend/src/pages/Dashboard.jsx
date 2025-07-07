@@ -1,106 +1,141 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
-import MedicineList from "../components/MedicineList";
-import StatCard from "../components/StatCard";
-import API from "../api";
-import toast from "react-hot-toast";
-import { Pill, Check, Clock, Search, List, LayoutGrid, Plus } from 'lucide-react';
+// frontend/src/pages/Dashboard.jsx
 
-// Helper function to get a greeting based on the time of day
-const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-};
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
+import { fetchMedicines, fetchMedicineStats } from '../api';
+import Loader from '../components/Loader';
+import EditModal from '../components/EditModal';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 
-function Dashboard({ setActivePage }) {
-  const [medicines, setMedicines] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('active');
-  const [viewMode, setViewMode] = useState('list');
-  const [searchQuery, setSearchQuery] = useState('');
+const StatCard = ({ title, value }) => (
+    <div className="stat-card">
+        <h3>{title}</h3>
+        <p>{value}</p>
+    </div>
+);
 
-  const fetchMedicines = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await API.get("/medicines");
-      setMedicines(res.data);
-    } catch (error) {
-      toast.error("Could not fetch medicines.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMedicines();
-  }, [fetchMedicines]);
-
-  // useMemo will cache the result of these complex filter operations
-  const filteredMedicines = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    return medicines
-      .filter(med => {
-        const endDate = med.end_date ? new Date(med.end_date) : null;
-        if (activeTab === 'active') {
-            return !endDate || endDate >= now;
-        }
-        return endDate && endDate < now;
-      })
-      .filter(med => med.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [medicines, activeTab, searchQuery]);
-
-  const activeCount = useMemo(() => medicines.filter(med => !med.end_date || new Date(med.end_date) >= new Date()).length, [medicines]);
-
-  return (
-    <>
-      <div className="page-header dashboard-header-enhanced">
+const MedicineCard = ({ medicine, onEdit, onDelete }) => (
+    <div className="medicine-card">
         <div>
-            <h1>{getGreeting()} !</h1>
-            <p>Here’s what’s on your health dashboard today.</p>
+            <h4 className="medicine-card-header">{medicine.name}</h4>
+            <p className="medicine-card-details">
+                <strong>Dosage:</strong> {medicine.dosage} <br/>
+                <strong>Frequency:</strong> {medicine.frequency}
+            </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setActivePage('add')}>
-            <Plus size={20} />
-            Add Medicine
-        </button>
-      </div>
+        <div className="medicine-card-actions">
+            <button onClick={() => onEdit(medicine)} className="btn btn-secondary">Edit</button>
+            <button onClick={() => onDelete(medicine)} className="btn btn-danger">Delete</button>
+        </div>
+    </div>
+);
 
-      <div className="stat-cards-container">
-        <StatCard icon={<Pill size={28}/>} value={activeCount} label="Active Medicines" />
-        <StatCard icon={<Clock size={28}/>} value={medicines.length - activeCount} label="Archived Medicines" />
-        <StatCard icon={<Check size={28}/>} value="98%" label="Adherence (Soon!)" />
-      </div>
+const Dashboard = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [medicines, setMedicines] = useState([]);
+    const [stats, setStats] = useState({ totalMedicines: 0, activeMedicines: 0, completedMedicines: 0 });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-      <div className="card">
-          <div className="controls-header">
-              <div className="tabs">
-                  <button className={`tab-button ${activeTab === 'active' ? 'active' : ''}`} onClick={() => setActiveTab('active')}>
-                      Active
-                      {activeTab === 'active' && <motion.div className="active-tab-indicator" layoutId="activeTab" />}
-                  </button>
-                  <button className={`tab-button ${activeTab === 'past' ? 'active' : ''}`} onClick={() => setActiveTab('past')}>
-                      Archived
-                      {activeTab === 'past' && <motion.div className="active-tab-indicator" layoutId="activeTab" />}
-                  </button>
-              </div>
-              <div className="search-and-view">
-                  <div className="search-bar">
-                      <Search className="icon" size={18} />
-                      <input type="text" placeholder="Search medicines..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                  </div>
-                  <div className="view-toggle">
-                      <button title="List View" className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}><List size={20}/></button>
-                      <button title="Grid View" className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}><LayoutGrid size={20}/></button>
-                  </div>
-              </div>
-          </div>
-          <MedicineList medicines={filteredMedicines} fetchMedicines={fetchMedicines} isLoading={isLoading} viewMode={viewMode}/>
-      </div>
-    </>
-  );
-}
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedMedicine, setSelectedMedicine] = useState(null);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const [medsResponse, statsResponse] = await Promise.all([
+                fetchMedicines(),
+                fetchMedicineStats()
+            ]);
+            setMedicines(medsResponse.data);
+            setStats(statsResponse.data);
+        } catch (err) {
+            setError('Failed to fetch your health data. Please try refreshing the page.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleEdit = (medicine) => {
+        setSelectedMedicine(medicine);
+        setEditModalOpen(true);
+    };
+
+    const handleDelete = (medicine) => {
+        setSelectedMedicine(medicine);
+        setDeleteModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setEditModalOpen(false);
+        setDeleteModalOpen(false);
+        setSelectedMedicine(null);
+    };
+
+    const onActionSuccess = () => {
+        fetchData(); // Refetch data after action
+    };
+
+    if (loading) {
+        return <Loader />;
+    }
+
+    return (
+        <div className="container">
+            <div className="dashboard-header">
+                <h1>Welcome, {user?.username}!</h1>
+                <button onClick={() => navigate('/add-medicine')} className="btn btn-primary">
+                    Add New Medicine
+                </button>
+            </div>
+            
+            {error && <p className="error-message">{error}</p>}
+
+            <div className="stat-cards">
+                <StatCard title="Total Medicines" value={stats.totalMedicines} />
+                <StatCard title="Active Medicines" value={stats.activeMedicines} />
+                <StatCard title="Completed" value={stats.completedMedicines} />
+            </div>
+
+            <div className="medicines-container">
+                <h2>Your Medications</h2>
+                {medicines.length > 0 ? (
+                    <div className="medicine-grid">
+                        {medicines.map(med => (
+                            <MedicineCard key={med.id} medicine={med} onEdit={handleEdit} onDelete={handleDelete} />
+                        ))}
+                    </div>
+                ) : (
+                    <p>You haven't added any medicines yet. Click the button above to get started!</p>
+                )}
+            </div>
+
+            {isEditModalOpen && selectedMedicine && (
+                <EditModal 
+                    isOpen={isEditModalOpen} 
+                    onClose={closeModal} 
+                    medicine={selectedMedicine}
+                    onSuccess={onActionSuccess}
+                />
+            )}
+            {isDeleteModalOpen && selectedMedicine && (
+                <DeleteConfirmModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={closeModal}
+                    medicine={selectedMedicine}
+                    onSuccess={onActionSuccess}
+                />
+            )}
+        </div>
+    );
+};
 
 export default Dashboard;

@@ -1,8 +1,13 @@
-const express = require('express');
+// backend/routes/authRoutes.js
+
+import express from 'express';
+import { register, login, getMe } from '../controllers/authController.js';
+import protect from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const { signup, login } = require('../controllers/authController');
 
-router.post('/signup', signup);
+router.post('/register', register);
 router.post('/login', login);
+router.get('/me', protect, getMe); // Protect this route
 
-module.exports = router;
+export default router;

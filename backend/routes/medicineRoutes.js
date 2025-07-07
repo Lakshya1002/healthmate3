@@ -1,20 +1,29 @@
-const express = require('express');
+// backend/routes/medicineRoutes.js
+
+import express from 'express';
+import { 
+    getAllMedicines, 
+    addMedicine, 
+    updateMedicine, 
+    deleteMedicine,
+    getMedicineStats
+} from '../controllers/medicineController.js';
+import protect from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const {
-  getAllMedicines,  // ✅ Correct name from your controller
-  addMedicine,
-  updateMedicine,
-  deleteMedicine,
-} = require('../controllers/medicineController');
 
-const authenticateToken = require('../middleware/authMiddleware');
+// All medicine routes are protected
+router.use(protect);
 
-// 🔐 Protect all routes below
-router.use(authenticateToken);
+router.route('/')
+    .get(getAllMedicines)
+    .post(addMedicine);
 
-router.get('/', getAllMedicines);
-router.post('/', addMedicine);
-router.put('/:id', updateMedicine);
-router.delete('/:id', deleteMedicine);
+router.route('/stats')
+    .get(getMedicineStats);
 
-module.exports = router;
+router.route('/:id')
+    .put(updateMedicine)
+    .delete(deleteMedicine);
+
+export default router;

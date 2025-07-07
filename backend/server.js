@@ -1,28 +1,35 @@
-// Import required packages
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
+// backend/server.js
 
-// Load environment variables from .env file
-dotenv.config();
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import pool from './config/db.js'; // .js extension is often needed with type: "module"
 
 // Import routes
-const medicineRoutes = require("./routes/medicineRoutes");
-const authRoutes = require("./routes/authRoutes"); // ✅ NEW: Auth routes
+import authRoutes from './routes/authRoutes.js';
+import medicineRoutes from './routes/medicineRoutes.js';
 
-// Initialize express app
+// Load environment variables
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON and allow frontend connection
-app.use(cors());             // allows requests from frontend (React)
-app.use(express.json());     // parses JSON data in request bodies
+// Middleware
+app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // Body parser for JSON format
+app.use(express.urlencoded({ extended: false })); // Body parser for URL-encoded data
 
-// Routes middleware
-app.use("/api/auth", authRoutes);           // ✅ NEW: Register/login
-app.use("/api/medicines", medicineRoutes);  // Medicines (will protect this soon)
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/medicines', medicineRoutes);
+
+// Basic route for testing
+app.get('/', (req, res) => {
+    res.send('HealthMate API is running...');
+});
 
 // Start the server
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

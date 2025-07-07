@@ -1,82 +1,59 @@
-// src/pages/SignupPage.jsx
-import React, { useState } from 'react';
-import { useAuth } from '../context/authContext';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+// frontend/src/pages/SignupPage.jsx
 
-function SignupPage() {
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
+
+const SignupPage = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.password) {
-      toast.error('Please fill all fields');
-      return;
-    }
-
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
-      await signup(form.name, form.email, form.password);
-      toast.success('Signup successful!');
+      await signup({ username, email, password });
       navigate('/dashboard');
     } catch (err) {
-      toast.error('Signup failed');
+      const message = err.response?.data?.message || 'Failed to sign up. Please try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="card auth-card">
-        <h2>Create an Account</h2>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="input-group">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Your name"
-              value={form.name}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="input-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="input-group">
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={handleChange}
-            />
-          </div>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Signing up...' : 'Sign Up'}
-          </button>
-        </form>
-        <p className="auth-switch">
-          Already have an account? <a href="/login">Login</a>
-        </p>
-      </div>
+    <div className="auth-container">
+      <h2>Create an Account</h2>
+      <form onSubmit={handleSubmit}>
+        {error && <div className="error-message">{error}</div>}
+        <div className="form-group">
+          <label htmlFor="username">Username</label>
+          <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+        </div>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </div>
+        <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
+          {loading ? 'Creating Account...' : 'Sign Up'}
+        </button>
+      </form>
+      <p className="auth-link">
+        Already have an account? <Link to="/login">Login</Link>
+      </p>
     </div>
   );
-}
+};
 
 export default SignupPage;

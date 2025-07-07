@@ -1,20 +1,29 @@
+// frontend/src/pages/AddMedicinePage.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { addMedicine } from '../api'; // Correct: Use named import
 import MedicineForm from '../components/MedicineForm';
-import { Pill } from 'lucide-react';
 
-const AddMedicinePage = ({ setActivePage }) => {
-  return (
-    <div>
-      <div className="page-header">
-        <h1><Pill size={36} style={{ marginRight: '1rem', color: 'var(--accent-primary)'}}/>Add New Medicine</h1>
-        <p>Follow the steps below to add a new item to your regimen.</p>
-      </div>
-      <MedicineForm onMedicineAdded={() => {
-        // After adding, navigate back to the dashboard to see the new entry
-        setActivePage('dashboard');
-      }} />
-    </div>
-  );
+const AddMedicinePage = () => {
+    const navigate = useNavigate();
+
+    const handleAdd = async (formData) => {
+        await addMedicine(formData);
+        navigate('/dashboard'); // Navigate to dashboard, which will re-fetch data
+    };
+
+    return (
+        <div className="container">
+            <div className="auth-container" style={{marginTop: '40px'}}>
+                <h2>Add New Medicine</h2>
+                <MedicineForm 
+                    onSubmit={handleAdd} 
+                    onCancel={() => navigate('/dashboard')} 
+                    submitText="Add Medicine" 
+                />
+            </div>
+        </div>
+    );
 };
 
 export default AddMedicinePage;

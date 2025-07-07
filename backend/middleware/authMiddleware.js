@@ -1,17 +1,34 @@
-const jwt = require('jsonwebtoken');
+// backend/middleware/authMiddleware.js
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer token
+import jwt from 'jsonwebtoken';
+import db from '../config/db.js';
 
-  if (!token) return res.status(401).json({ error: 'No token provided' });
+const protect = async (req, res, next) => {
+  let token;
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      // Get token from header
+      token = req.headers.authorization.split(' ')[1];
 
-    req.user = user;
-    next();
-  });
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'a_secure_jwt_secret_replace_it');
+
+      // Get user from the token payload (we only need the ID)
+      // We don't need to query the DB here, we can do it in the protected route if needed
+      // This makes the middleware faster.
+      req.user = { id: decoded.id };
+
+      next();
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  }
+
+  if (!token) {
+    res.status(401).json({ message: 'Not authorized, no token' });
+  }
 };
 
-module.exports = authenticateToken;
+export default protect;

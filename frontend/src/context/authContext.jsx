@@ -1,65 +1,71 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+// frontend/src/context/authContext.jsx
 
-// Create context
-const AuthContext = createContext();
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
+import { setAuthToken, loginUser, registerUser, getMe } from '../api';
+import Loader from '../components/Loader';
 
-// Custom hook for easy access
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext(null);
 
-// Provider component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Store user info
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load user from token on app start
   useEffect(() => {
-    if (token) {
-      setUser({ token }); // For simplicity. You can decode token for more info if needed.
-    }
-  }, [token]);
+    const verifyUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setAuthToken(token);
+        try {
+          const { data } = await getMe();
+          setUser(data);
+        } catch (error) {
+          console.error("Auth token verification failed", error);
+          localStorage.removeItem('token');
+          setAuthToken(null);
+        }
+      }
+      setLoading(false);
+    };
 
-  // Login function
-  const login = async (email, password) => {
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
-      const token = res.data.token;
-      localStorage.setItem("token", token);
-      setToken(token);
-      setUser({ token });
-      return { success: true };
-    } catch (err) {
-      return { success: false, message: err.response?.data?.error || "Login failed" };
-    }
+    verifyUser();
+  }, []);
+
+  const login = async (credentials) => {
+    const { data } = await loginUser(credentials);
+    localStorage.setItem('token', data.token);
+    setAuthToken(data.token);
+    setUser({ id: data.id, username: data.username, email: data.email });
   };
 
-  // Signup function
-  const signup = async (name, email, password) => {
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/signup", {
-        name,
-        email,
-        password,
-      });
-      return { success: true, message: res.data.message };
-    } catch (err) {
-      return { success: false, message: err.response?.data?.error || "Signup failed" };
-    }
+  const signup = async (userData) => {
+    const { data } = await registerUser(userData);
+    localStorage.setItem('token', data.token);
+    setAuthToken(data.token);
+    setUser({ id: data.id, username: data.username, email: data.email });
   };
 
-  // Logout function
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken("");
+    localStorage.removeItem('token');
+    setAuthToken(null);
     setUser(null);
   };
+  
+  const value = useMemo(() => ({
+    user,
+    isAuthenticated: !!user,
+    loading,
+    login,
+    signup,
+    logout,
+  }), [user, loading]);
 
-  return (
-    <AuthContext.Provider value={{ user, token, login, signup, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  if (loading) {
+    return <Loader />;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  return useContext(AuthContext);
 };
