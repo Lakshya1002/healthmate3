@@ -5,6 +5,7 @@ import MedicineList from "../components/MedicineList";
 import StatCard from "../components/StatCard";
 import API from "../api";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/authContext"; // Import useAuth
 import { Pill, Check, Clock, Search, List, LayoutGrid } from 'lucide-react';
 
 function Home() {
@@ -13,6 +14,7 @@ function Home() {
   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'past'
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth(); // Get user from auth context
 
   const fetchMedicines = useCallback(async () => {
     setIsLoading(true);
@@ -50,12 +52,16 @@ function Home() {
       );
   }, [medicines, activeTab, searchQuery]);
 
-  const activeCount = useMemo(() => medicines.filter(med => !med.end_date || new Date(med.end_date) >= new Date()).length, [medicines]);
+  const activeCount = useMemo(() => {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return medicines.filter(med => !med.end_date || new Date(med.end_date) >= now).length;
+  }, [medicines]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <div className="dashboard-header">
-        <h1>Welcome back, Lakshya!</h1>
+        <h1>Welcome back, {user?.username}!</h1>
         <p>Your personal health dashboard is ready.</p>
       </div>
 

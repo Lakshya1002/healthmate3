@@ -1,6 +1,17 @@
 // backend/controllers/medicineController.js
 
 import db from '../config/db.js';
+import Joi from 'joi';
+
+// --- Validation Schemas ---
+const medicineSchema = Joi.object({
+    name: Joi.string().max(100).required(),
+    dosage: Joi.string().max(50).required(),
+    frequency: Joi.string().max(100).required(),
+    start_date: Joi.date().required(),
+    end_date: Joi.date().allow(null, ''),
+    notes: Joi.string().allow(null,' '),
+});
 
 /**
  * @desc    Get all medicines for the logged-in user
@@ -27,13 +38,13 @@ export const getAllMedicines = async (req, res) => {
  * @access  Private
  */
 export const addMedicine = async (req, res) => {
+  const { error } = medicineSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+    }
+
   const { name, dosage, frequency, start_date, end_date, notes } = req.body;
   const userId = req.user.id; // Get user ID from the authenticated request
-
-  // Basic validation for required fields
-  if (!name || !dosage || !frequency || !start_date) {
-    return res.status(400).json({ message: 'Please provide name, dosage, frequency, and start date.' });
-  }
 
   try {
     const [result] = await db.query(
@@ -55,14 +66,14 @@ export const addMedicine = async (req, res) => {
  * @access  Private
  */
 export const updateMedicine = async (req, res) => {
+  const { error } = medicineSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+    }
+
   const medicineId = req.params.id;
   const userId = req.user.id;
   const { name, dosage, frequency, start_date, end_date, notes } = req.body;
-
-  // Validation
-  if (!name || !dosage || !frequency || !start_date) {
-    return res.status(400).json({ message: 'Please provide name, dosage, frequency, and start date.' });
-  }
 
   try {
     // First, verify the medicine exists and belongs to the user to prevent unauthorized updates
@@ -113,36 +124,5 @@ export const deleteMedicine = async (req, res) => {
   } catch (error) {
     console.error('Delete Medicine Error:', error);
     res.status(500).json({ message: 'Server error while deleting medicine.' });
-  }
-};
-
-/**
- * @desc    Get medicine statistics for the logged-in user
- * @route   GET /api/medicines/stats
- * @access  Private
- */
-export const getMedicineStats = async (req, res) => {
-  try {
-    const query = `
-      SELECT
-        COUNT(*) AS totalMedicines,
-        SUM(CASE WHEN end_date IS NULL OR end_date >= CURDATE() THEN 1 ELSE 0 END) AS activeMedicines,
-        SUM(CASE WHEN end_date < CURDATE() THEN 1 ELSE 0 END) AS completedMedicines
-      FROM medicines
-      WHERE user_id = ?
-    `;
-    const [stats] = await db.query(query, [req.user.id]);
-    
-    // The query returns an array with one object. Default nulls to 0.
-    const userStats = {
-        totalMedicines: stats[0].totalMedicines || 0,
-        activeMedicines: stats[0].activeMedicines || 0,
-        completedMedicines: stats[0].completedMedicines || 0
-    };
-
-    res.status(200).json(userStats);
-  } catch (error) {
-    console.error('Get Medicine Stats Error:', error);
-    res.status(500).json({ message: 'Server error while fetching stats.' });
   }
 };

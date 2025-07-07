@@ -3,8 +3,6 @@
 import axios from 'axios';
 
 // Create a centralized Axios instance.
-// The `proxy` in vite.config.js will handle redirecting `/api` requests
-// to the backend server during development.
 const api = axios.create({
   baseURL: '/api',
 });
@@ -26,12 +24,16 @@ export const setAuthToken = (token) => {
 // Auth
 export const loginUser = (userData) => api.post('/auth/login', userData);
 export const registerUser = (userData) => api.post('/auth/register', userData);
-// This function was missing. It fetches the current user's profile.
 export const getMe = () => api.get('/auth/me');
 
 // Medicines
 export const fetchMedicines = () => api.get('/medicines');
-export const fetchMedicineStats = () => api.get('/medicines/stats');
 export const addMedicine = (medicineData) => api.post('/medicines', medicineData);
 export const updateMedicine = (id, medicineData) => api.put(`/medicines/${id}`, medicineData);
 export const deleteMedicine = (id) => api.delete(`/medicines/${id}`);
+
+// Health Logs (NEW)
+export const fetchHealthLogs = () => api.get('/health-logs');
+export const addHealthLog = (logData) => api.post('/health-logs', logData);
+export const updateHealthLog = (id, logData) => api.put(`/health-logs/${id}`, logData);
+export const deleteHealthLog = (id) => api.delete(`/health-logs/${id}`);

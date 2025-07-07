@@ -6,7 +6,6 @@ import {
     addMedicine, 
     updateMedicine, 
     deleteMedicine,
-    getMedicineStats
 } from '../controllers/medicineController.js';
 import protect from '../middleware/authMiddleware.js';
 
@@ -18,9 +17,6 @@ router.use(protect);
 router.route('/')
     .get(getAllMedicines)
     .post(addMedicine);
-
-router.route('/stats')
-    .get(getMedicineStats);
 
 router.route('/:id')
     .put(updateMedicine)

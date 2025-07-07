@@ -6,13 +6,21 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+if (!DB_HOST || !DB_USER || !DB_PASSWORD || !DB_NAME) {
+    console.error(
+        'FATAL ERROR: Database environment variables are not defined.'
+    );
+    process.exit(1);
+}
+
 // Create a connection pool for efficient database connection management.
-// A pool prevents the overhead of creating a new connection for every query.
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'healthmate',
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

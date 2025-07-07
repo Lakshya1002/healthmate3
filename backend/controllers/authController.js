@@ -3,6 +3,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../config/db.js';
+import Joi from 'joi';
 
 // --- Helper Function ---
 /**
@@ -11,10 +12,28 @@ import db from '../config/db.js';
  * @returns {string} - The generated JWT.
  */
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'a_secure_jwt_secret_replace_it', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+      console.error('FATAL ERROR: JWT_SECRET is not defined.');
+      process.exit(1);
+  }
+  return jwt.sign({ id }, secret, {
     expiresIn: '30d',
   });
 };
+
+
+// --- Validation Schemas ---
+const registerSchema = Joi.object({
+    username: Joi.string().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+});
+
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+});
 
 
 // --- Controller Functions ---
@@ -25,12 +44,12 @@ const generateToken = (id) => {
  * @access  Public
  */
 export const register = async (req, res) => {
-  const { username, email, password } = req.body;
+    const { error } = registerSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+    }
 
-  // Validate incoming data
-  if (!username || !email || !password) {
-    return res.status(400).json({ message: 'Please provide all required fields (username, email, password).' });
-  }
+    const { username, email, password } = req.body;
 
   try {
     // Check if a user with the given email already exists
@@ -69,12 +88,12 @@ export const register = async (req, res) => {
  * @access  Public
  */
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  
-  // Validate incoming data
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Please provide both email and password.' });
+  const { error } = loginSchema.validate(req.body);
+  if (error) {
+      return res.status(400).json({ message: error.details[0].message });
   }
+  
+  const { email, password } = req.body;
 
   try {
     // Find the user by email

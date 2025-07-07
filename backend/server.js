@@ -3,11 +3,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import pool from './config/db.js'; // .js extension is often needed with type: "module"
+import pool from './config/db.js'; // .js extension is needed with type: "module"
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
+import healthLogRoutes from './routes/healthLogRoutes.js'; // Import new routes
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: false })); // Body parser for URL-encoded
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/medicines', medicineRoutes);
+app.use('/api/health-logs', healthLogRoutes); // Use new routes
 
 // Basic route for testing
 app.get('/', (req, res) => {

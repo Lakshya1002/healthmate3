@@ -1,41 +1,52 @@
 // frontend/src/pages/Dashboard.jsx
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/authContext';
-import { fetchMedicines, fetchMedicineStats } from '../api';
+import * as api from '../api';
+import toast from 'react-hot-toast';
+
+// --- Component Imports ---
 import Loader from '../components/Loader';
 import EditModal from '../components/EditModal';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import MedicineForm from '../components/MedicineForm';
+import MedicineList from '../components/MedicineList';
 
-const StatCard = ({ title, value }) => (
-    <div className="stat-card">
-        <h3>{title}</h3>
-        <p>{value}</p>
-    </div>
-);
+// --- Icon Imports ---
+import { Pill, CheckSquare, Clock } from 'lucide-react';
 
-const MedicineCard = ({ medicine, onEdit, onDelete }) => (
-    <div className="medicine-card">
-        <div>
-            <h4 className="medicine-card-header">{medicine.name}</h4>
-            <p className="medicine-card-details">
-                <strong>Dosage:</strong> {medicine.dosage} <br/>
-                <strong>Frequency:</strong> {medicine.frequency}
-            </p>
-        </div>
-        <div className="medicine-card-actions">
-            <button onClick={() => onEdit(medicine)} className="btn btn-secondary">Edit</button>
-            <button onClick={() => onDelete(medicine)} className="btn btn-danger">Delete</button>
-        </div>
-    </div>
-);
+const StatCard = ({ icon, title, value }) => {
+    const [x, setX] = useState(0);
+    const [y, setY] = useState(0);
+
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setX(e.clientX - rect.left);
+        setY(e.clientY - rect.top);
+    };
+
+    return (
+        <motion.div
+            className="card stat-card"
+            onMouseMove={handleMouseMove}
+            style={{ '--x': `${x}px`, '--y': `${y}px` }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+            {icon}
+            <div>
+                <h3>{title}</h3>
+                <p>{value}</p>
+            </div>
+        </motion.div>
+    );
+};
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [medicines, setMedicines] = useState([]);
-    const [stats, setStats] = useState({ totalMedicines: 0, activeMedicines: 0, completedMedicines: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -45,16 +56,12 @@ const Dashboard = () => {
 
     const fetchData = useCallback(async () => {
         setLoading(true);
-        setError('');
         try {
-            const [medsResponse, statsResponse] = await Promise.all([
-                fetchMedicines(),
-                fetchMedicineStats()
-            ]);
-            setMedicines(medsResponse.data);
-            setStats(statsResponse.data);
+            const { data } = await api.fetchMedicines();
+            setMedicines(data);
         } catch (err) {
             setError('Failed to fetch your health data. Please try refreshing the page.');
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -63,6 +70,16 @@ const Dashboard = () => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const stats = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const activeMeds = medicines.filter(med => !med.end_date || new Date(med.end_date) >= now);
+        return {
+            active: activeMeds.length,
+            completed: medicines.length - activeMeds.length,
+        };
+    }, [medicines]);
 
     const handleEdit = (medicine) => {
         setSelectedMedicine(medicine);
@@ -81,7 +98,13 @@ const Dashboard = () => {
     };
 
     const onActionSuccess = () => {
-        fetchData(); // Refetch data after action
+        fetchData();
+        closeModal();
+    };
+
+    const handleMedicineAdded = () => {
+        toast.success("Medicine added successfully!");
+        fetchData();
     };
 
     if (loading) {
@@ -89,52 +112,53 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="container">
-            <div className="dashboard-header">
+        <>
+            <div className="page-header">
                 <h1>Welcome, {user?.username}!</h1>
-                <button onClick={() => navigate('/add-medicine')} className="btn btn-primary">
-                    Add New Medicine
-                </button>
+                <p>Your personal health dashboard. Add, view, and manage your medications all in one place.</p>
             </div>
             
             {error && <p className="error-message">{error}</p>}
 
-            <div className="stat-cards">
-                <StatCard title="Total Medicines" value={stats.totalMedicines} />
-                <StatCard title="Active Medicines" value={stats.activeMedicines} />
-                <StatCard title="Completed" value={stats.completedMedicines} />
+            <div className="stat-cards-container">
+                <StatCard icon={<Pill size={24} />} title="Active Medicines" value={stats.active} />
+                <StatCard icon={<CheckSquare size={24} />} title="Completed Regimens" value={stats.completed} />
+                <StatCard icon={<Clock size={24} />} title="Total Recorded" value={medicines.length} />
             </div>
 
-            <div className="medicines-container">
-                <h2>Your Medications</h2>
-                {medicines.length > 0 ? (
-                    <div className="medicine-grid">
-                        {medicines.map(med => (
-                            <MedicineCard key={med.id} medicine={med} onEdit={handleEdit} onDelete={handleDelete} />
-                        ))}
-                    </div>
-                ) : (
-                    <p>You haven't added any medicines yet. Click the button above to get started!</p>
+            <div className="dashboard-grid">
+                <motion.div layout className="form-container card">
+                    <h2>Add a New Medicine</h2>
+                    <MedicineForm onMedicineAdded={handleMedicineAdded} />
+                </motion.div>
+                <motion.div layout className="list-container">
+                    <MedicineList 
+                        medicines={medicines} 
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                    />
+                </motion.div>
+            </div>
+
+            <AnimatePresence>
+                {isEditModalOpen && selectedMedicine && (
+                    <EditModal 
+                        isOpen={isEditModalOpen} 
+                        onClose={closeModal} 
+                        medicine={selectedMedicine}
+                        onSuccess={onActionSuccess}
+                    />
                 )}
-            </div>
-
-            {isEditModalOpen && selectedMedicine && (
-                <EditModal 
-                    isOpen={isEditModalOpen} 
-                    onClose={closeModal} 
-                    medicine={selectedMedicine}
-                    onSuccess={onActionSuccess}
-                />
-            )}
-            {isDeleteModalOpen && selectedMedicine && (
-                <DeleteConfirmModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={closeModal}
-                    medicine={selectedMedicine}
-                    onSuccess={onActionSuccess}
-                />
-            )}
-        </div>
+                {isDeleteModalOpen && selectedMedicine && (
+                    <DeleteConfirmModal
+                        isOpen={isDeleteModalOpen}
+                        onClose={closeModal}
+                        medicine={selectedMedicine}
+                        onSuccess={onActionSuccess}
+                    />
+                )}
+            </AnimatePresence>
+        </>
     );
 };
 

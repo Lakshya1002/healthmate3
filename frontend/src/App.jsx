@@ -1,92 +1,132 @@
-import React from 'react';
-import { Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Pill, LayoutDashboard, PlusCircle, Info, Mail } from 'lucide-react';
+// frontend/src/App.jsx
 
+import React, { useState } from 'react';
+import { Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pill, LayoutDashboard, HeartPulse, Info, Mail, LogOut, Menu, X } from 'lucide-react';
+
+// --- Page Imports ---
 import Dashboard from './pages/Dashboard';
-import AddMedicinePage from './pages/AddMedicinePage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/loginPage';
 import SignupPage from './pages/signupPage';
+import HealthLogPage from './pages/HealthLogPage';
 
+// --- Context & CSS ---
 import { useAuth } from './context/authContext';
 import './App.css';
+import './HealthLog.css';
+
+// --- Layout Components ---
+const NavLink = ({ to, icon, children, onClick }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
+
+    return (
+        <Link to={to} className={`nav-link ${isActive ? 'active' : ''}`} onClick={onClick}>
+            {icon}
+            <span className="nav-text">{children}</span>
+        </Link>
+    );
+};
+
+const Sidebar = ({ onLinkClick }) => {
+    const { logout } = useAuth();
+    return (
+        <aside className="sidebar">
+            <div className="sidebar-header">
+                <Pill size={32} className="logo-icon" />
+                <h1 className="logo-text">HealthMate</h1>
+            </div>
+            <nav className="sidebar-nav">
+                <NavLink to="/" icon={<LayoutDashboard size={20} />} onClick={onLinkClick}>Dashboard</NavLink>
+                <NavLink to="/health-logs" icon={<HeartPulse size={20} />} onClick={onLinkClick}>Health Logs</NavLink>
+                <NavLink to="/about" icon={<Info size={20} />} onClick={onLinkClick}>About</NavLink>
+                <NavLink to="/contact" icon={<Mail size={20} />} onClick={onLinkClick}>Contact</NavLink>
+            </nav>
+            <div className="sidebar-footer">
+                <button className="nav-link logout-btn" onClick={logout}>
+                    <LogOut size={20} />
+                    <span className="nav-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+    );
+};
+
+const MainLayout = ({ children }) => {
+    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    return (
+        <div className={`main-layout ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+            <div className="mobile-header">
+                <Link to="/" className="mobile-logo">
+                    <Pill size={28} />
+                    <span>HealthMate</span>
+                </Link>
+                <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </div>
+            <Sidebar onLinkClick={() => setMobileMenuOpen(false)} />
+            <div className="content-scroller">
+                <main className="content-area">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={useLocation().pathname}
+                            initial="initial"
+                            animate="in"
+                            exit="out"
+                            variants={{
+                                initial: { opacity: 0, y: 20 },
+                                in: { opacity: 1, y: 0 },
+                                out: { opacity: 0, y: -20 },
+                            }}
+                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                        >
+                            {children}
+                        </motion.div>
+                    </AnimatePresence>
+                </main>
+            </div>
+        </div>
+    );
+};
 
 function App() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+    const { user, loading } = useAuth();
+    const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+    if (loading) {
+        return <div className="loading-screen"><div className="loader"></div></div>;
+    }
 
-  const NavLink = ({ to, icon, children }) => (
-    <Link to={to} className={`nav-link ${location.pathname === to ? 'active' : ''}`}>
-      {icon}
-      <span className="nav-text">{children}</span>
-      {location.pathname === to && (
-        <motion.div className="active-nav-indicator" layoutId="activeNav" />
-      )}
-    </Link>
-  );
-
-  const isProtectedRoute = !['/login', '/signup'].includes(location.pathname);
-
-  return (
-    <div className="app-layout">
-      {isProtectedRoute && (
-        <header className="app-header">
-          <div className="header-logo">
-            <Pill size={32} />
-            <h1>HealthMate</h1>
-          </div>
-          <nav className="header-nav">
-            <NavLink to="/" icon={<LayoutDashboard size={20} />}>Dashboard</NavLink>
-            <NavLink to="/add" icon={<PlusCircle size={20} />}>Add Medicine</NavLink>
-            <NavLink to="/about" icon={<Info size={20} />}>About Us</NavLink>
-            <NavLink to="/contact" icon={<Mail size={20} />}>Contact</NavLink>
-            <button className="logout-btn" onClick={handleLogout}>Logout</button>
-          </nav>
-        </header>
-      )}
-
-      <main className="app-main">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
+    return (
+        <div className="app-container">
             <Routes location={location} key={location.pathname}>
-              {/* Public Routes */}
-              <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
-              <Route path="/signup" element={user ? <Navigate to="/" /> : <SignupPage />} />
-
-              {/* Protected Routes */}
-              <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-              <Route path="/add" element={user ? <AddMedicinePage /> : <Navigate to="/login" />} />
-              <Route path="/about" element={user ? <AboutPage /> : <Navigate to="/login" />} />
-              <Route path="/contact" element={user ? <ContactPage /> : <Navigate to="/login" />} />
-
-              {/* Catch all */}
-              <Route path="*" element={<Navigate to="/" />} />
+                {user ? (
+                    <Route path="/*" element={
+                        <MainLayout>
+                            <Routes>
+                                <Route path="/" element={<Dashboard />} />
+                                <Route path="/health-logs" element={<HealthLogPage />} />
+                                <Route path="/about" element={<AboutPage />} />
+                                <Route path="/contact" element={<ContactPage />} />
+                                <Route path="*" element={<Navigate to="/" />} />
+                            </Routes>
+                        </MainLayout>
+                    } />
+                ) : (
+                    <>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/signup" element={<SignupPage />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
+                    </>
+                )}
             </Routes>
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      {isProtectedRoute && (
-        <footer className="app-footer">
-          <p>HealthMate &copy; 2025 - Built by Lakshya Sabharwal</p>
-        </footer>
-      )}
-    </div>
-  );
+        </div>
+    );
 }
 
 export default App;
