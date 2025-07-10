@@ -1,16 +1,16 @@
-// frontend/src/pages/HealthLogPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+// frontend/src/pages/healthLogPage.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { HeartPulse, Plus, Edit, Trash2 } from 'lucide-react';
+import { HeartPulse, Plus, Edit, Trash2, TrendingUp } from 'lucide-react';
 
-import * as api from '../api'; // Correct way to import named exports
+import { fetchHealthLogs, addHealthLog, updateHealthLog, deleteHealthLog } from '../api';
 import Loader from '../components/Loader';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
-import HealthLogForm from '../components/HealthLogForm';
+import HealthLogForm from '../components/healthLogForm';
+import HealthCharts from '../components/healthChart'; // ✅ Corrected Import
 
-// A simple component to display each log
 const HealthLogItem = ({ log, onEdit, onDelete }) => (
   <motion.div 
     className="health-log-item"
@@ -49,7 +49,7 @@ const HealthLogPage = () => {
     const fetchLogs = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { data } = await api.fetchHealthLogs();
+            const { data } = await fetchHealthLogs();
             setLogs(data);
         } catch (error) {
             toast.error('Could not fetch health logs.');
@@ -62,6 +62,10 @@ const HealthLogPage = () => {
     useEffect(() => {
         fetchLogs();
     }, [fetchLogs]);
+
+    const sortedLogs = useMemo(() => {
+        return [...logs].sort((a, b) => new Date(a.log_date) - new Date(b.log_date));
+    }, [logs]);
 
     const handleOpenModal = (log = null) => {
         setEditingLog(log);
@@ -85,8 +89,8 @@ const HealthLogPage = () => {
 
     const handleSubmit = async (formData) => {
         const promise = editingLog
-            ? api.updateHealthLog(editingLog.log_id, formData)
-            : api.addHealthLog(formData);
+            ? updateHealthLog(editingLog.id, formData)
+            : addHealthLog(formData);
 
         try {
             await toast.promise(promise, {
@@ -104,7 +108,7 @@ const HealthLogPage = () => {
     const handleDelete = async () => {
         if (!editingLog) return;
         try {
-            await toast.promise(api.deleteHealthLog(editingLog.log_id), {
+            await toast.promise(deleteHealthLog(editingLog.id), {
                 loading: 'Deleting log...',
                 success: 'Health log deleted!',
                 error: 'Failed to delete log.',
@@ -121,7 +125,7 @@ const HealthLogPage = () => {
             <div className="page-header dashboard-header-enhanced">
                 <div>
                     <h1><HeartPulse size={36} style={{ marginRight: '1rem', color: 'var(--accent-danger)'}}/>Health Logs</h1>
-                    <p>Track your daily vitals and notes.</p>
+                    <p>Track your daily vitals and see your progress over time.</p>
                 </div>
                 <Button onClick={() => handleOpenModal()}>
                     <Plus size={20} />
@@ -129,14 +133,29 @@ const HealthLogPage = () => {
                 </Button>
             </div>
 
+            {logs.length > 1 && (
+                <div className="charts-section card">
+                    <div className="charts-header">
+                        <TrendingUp size={24} />
+                        <h2>Your Health Trends</h2>
+                    </div>
+                    <div className="charts-grid">
+                        <HealthChart data={sortedLogs} dataKey="weight" name="Weight (lbs)" color="#8884d8" />
+                        <HealthChart data={sortedLogs} dataKey="heart_rate" name="Heart Rate (bpm)" color="#82ca9d" />
+                        <HealthChart data={sortedLogs} dataKey="temperature" name="Temperature (°F)" color="#ffc658" />
+                    </div>
+                </div>
+            )}
+
             <div className="card">
+                <h2>Log History</h2>
                 {isLoading ? (
                     <Loader />
                 ) : logs.length > 0 ? (
                     <div className="health-log-list">
                         <AnimatePresence>
-                            {logs.map(log => (
-                                <HealthLogItem key={log.log_id} log={log} onEdit={handleOpenModal} onDelete={handleOpenDeleteModal} />
+                            {logs.sort((a,b) => new Date(b.log_date) - new Date(a.log_date)).map(log => (
+                                <HealthLogItem key={log.id} log={log} onEdit={handleOpenModal} onDelete={handleOpenDeleteModal} />
                             ))}
                         </AnimatePresence>
                     </div>
@@ -151,7 +170,6 @@ const HealthLogPage = () => {
                 )}
             </div>
             
-            {/* Add/Edit Modal */}
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingLog ? 'Edit Health Log' : 'Add New Health Log'}>
                 <HealthLogForm 
                     onSubmit={handleSubmit}
@@ -161,7 +179,6 @@ const HealthLogPage = () => {
                 />
             </Modal>
 
-            {/* Delete Confirmation Modal */}
             <Modal isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal} title="Confirm Deletion">
                 <p>Are you sure you want to delete the log for <strong>{editingLog && new Date(editingLog.log_date).toLocaleDateString()}</strong>?</p>
                 <div className="modal-actions">

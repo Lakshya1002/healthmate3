@@ -3,12 +3,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import pool from './config/db.js'; // .js extension is needed with type: "module"
+import pool from './config/db.js';
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
-import healthLogRoutes from './routes/healthLogRoutes.js'; // Import new routes
+import healthLogRoutes from './routes/healthLogRoutes.js';
+import reminderRoutes from './routes/reminderRoutes.js'; // ✅ Import reminder routes
 
 // Load environment variables
 dotenv.config();
@@ -17,14 +18,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors()); // Enable Cross-Origin Resource Sharing
-app.use(express.json()); // Body parser for JSON format
-app.use(express.urlencoded({ extended: false })); // Body parser for URL-encoded data
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/medicines', medicineRoutes);
-app.use('/api/health-logs', healthLogRoutes); // Use new routes
+app.use('/api/health-logs', healthLogRoutes);
+app.use('/api/reminders', reminderRoutes); // ✅ Use reminder routes
 
 // Basic route for testing
 app.get('/', (req, res) => {
