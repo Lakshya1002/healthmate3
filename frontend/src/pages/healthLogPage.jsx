@@ -9,7 +9,7 @@ import Loader from '../components/Loader';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import HealthLogForm from '../components/healthLogForm';
-import HealthCharts from '../components/healthChart'; // ✅ Corrected Import
+import HealthChart from '../components/healthChart'; // ✅ Corrected Import
 
 const HealthLogItem = ({ log, onEdit, onDelete }) => (
   <motion.div 
