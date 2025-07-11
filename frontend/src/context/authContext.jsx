@@ -9,6 +9,23 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(() => {
+      if (typeof window !== 'undefined') {
+          return localStorage.getItem('theme') || 'light';
+      }
+      return 'light';
+  });
+
+  useEffect(() => {
+    const body = window.document.body;
+    body.classList.remove('light', 'dark');
+    body.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   useEffect(() => {
     const verifyUser = async () => {
@@ -52,12 +69,15 @@ export const AuthProvider = ({ children }) => {
   
   const value = useMemo(() => ({
     user,
+    setUser,
     isAuthenticated: !!user,
     loading,
     login,
     signup,
     logout,
-  }), [user, loading]);
+    theme,
+    toggleTheme
+  }), [user, loading, theme]);
 
   if (loading) {
     return <Loader />;

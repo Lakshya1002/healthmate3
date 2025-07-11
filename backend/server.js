@@ -9,7 +9,8 @@ import pool from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
 import healthLogRoutes from './routes/healthLogRoutes.js';
-import reminderRoutes from './routes/reminderRoutes.js'; // ✅ Import reminder routes
+import reminderRoutes from './routes/reminderRoutes.js';
+import userRoutes from './routes/userRoutes.js'; // ✅ Import user routes
 
 // Load environment variables
 dotenv.config();
@@ -24,9 +25,10 @@ app.use(express.urlencoded({ extended: false }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes); // ✅ Use user routes
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/health-logs', healthLogRoutes);
-app.use('/api/reminders', reminderRoutes); // ✅ Use reminder routes
+app.use('/api/reminders', reminderRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {

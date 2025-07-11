@@ -1,21 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { Info } from 'lucide-react';
-import EditModal from "./EditModal";
-import DeleteConfirmModal from "./DeleteConfirmModal";
 import Loader from "./Loader";
 import MedicineListItem from "./MedicineListItem";
 import MedicineGridItem from "./MedicineGridItem";
 
-function MedicineList({ medicines, fetchMedicines, isLoading, viewMode }) {
-  const [editingMedicine, setEditingMedicine] = useState(null);
-  const [deletingMedicine, setDeletingMedicine] = useState(null);
+function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetInfo }) {
 
   if (isLoading) {
     return <Loader />;
   }
 
-  if (medicines.length === 0) {
+  if (!medicines || medicines.length === 0) {
     return (
         <div className="empty-state">
             <Info size={48} className="icon"/>
@@ -31,11 +27,12 @@ function MedicineList({ medicines, fetchMedicines, isLoading, viewMode }) {
                 <AnimatePresence>
                     {medicines.map((med, i) => (
                         <MedicineListItem
-                            key={med.medicine_id}
+                            key={med.id}
                             med={med}
                             index={i}
-                            onEdit={() => setEditingMedicine(med)}
-                            onDelete={() => setDeletingMedicine(med)}
+                            onEdit={() => onEdit(med)}
+                            onDelete={() => onDelete(med)}
+                            onGetInfo={() => onGetInfo(med)} // ✅ Pass handler
                         />
                     ))}
                 </AnimatePresence>
@@ -45,21 +42,17 @@ function MedicineList({ medicines, fetchMedicines, isLoading, viewMode }) {
                  <AnimatePresence>
                     {medicines.map((med, i) => (
                        <MedicineGridItem
-                            key={med.medicine_id}
+                            key={med.id}
                             med={med}
                             index={i}
-                            onEdit={() => setEditingMedicine(med)}
-                            onDelete={() => setDeletingMedicine(med)}
+                            onEdit={() => onEdit(med)}
+                            onDelete={() => onDelete(med)}
+                            onGetInfo={() => onGetInfo(med)} // ✅ Pass handler
                         />
                     ))}
                 </AnimatePresence>
             </div>
         )}
-
-      <AnimatePresence>
-        {editingMedicine && <EditModal medicine={editingMedicine} onClose={() => setEditingMedicine(null)} onUpdate={fetchMedicines} />}
-        {deletingMedicine && <DeleteConfirmModal medicine={deletingMedicine} onClose={() => setDeletingMedicine(null)} onConfirm={fetchMedicines} />}
-      </AnimatePresence>
     </div>
   );
 }

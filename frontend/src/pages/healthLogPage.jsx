@@ -8,8 +8,8 @@ import { fetchHealthLogs, addHealthLog, updateHealthLog, deleteHealthLog } from 
 import Loader from '../components/Loader';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
-import HealthLogForm from '../components/healthLogForm';
-import HealthChart from '../components/healthChart'; // ✅ Corrected Import
+import HealthLogForm from '../components/HealthLogForm';
+import HealthChart from '../components/healthChart';
 
 const HealthLogItem = ({ log, onEdit, onDelete }) => (
   <motion.div 
@@ -63,7 +63,7 @@ const HealthLogPage = () => {
         fetchLogs();
     }, [fetchLogs]);
 
-    const sortedLogs = useMemo(() => {
+    const sortedLogsForCharts = useMemo(() => {
         return [...logs].sort((a, b) => new Date(a.log_date) - new Date(b.log_date));
     }, [logs]);
 
@@ -120,6 +120,11 @@ const HealthLogPage = () => {
         }
     };
 
+    // ✅ Create a safely filtered and sorted list for rendering
+    const validLogsForRender = logs
+        .filter(log => log && log.id) // Filter out any logs without an ID
+        .sort((a, b) => new Date(b.log_date) - new Date(a.log_date));
+
     return (
         <div>
             <div className="page-header dashboard-header-enhanced">
@@ -140,9 +145,9 @@ const HealthLogPage = () => {
                         <h2>Your Health Trends</h2>
                     </div>
                     <div className="charts-grid">
-                        <HealthChart data={sortedLogs} dataKey="weight" name="Weight (lbs)" color="#8884d8" />
-                        <HealthChart data={sortedLogs} dataKey="heart_rate" name="Heart Rate (bpm)" color="#82ca9d" />
-                        <HealthChart data={sortedLogs} dataKey="temperature" name="Temperature (°F)" color="#ffc658" />
+                        <HealthChart key="weight-chart" data={sortedLogsForCharts} dataKey="weight" name="Weight (lbs)" color="#8884d8" />
+                        <HealthChart key="hr-chart" data={sortedLogsForCharts} dataKey="heart_rate" name="Heart Rate (bpm)" color="#82ca9d" />
+                        <HealthChart key="temp-chart" data={sortedLogsForCharts} dataKey="temperature" name="Temperature (°F)" color="#ffc658" />
                     </div>
                 </div>
             )}
@@ -154,7 +159,7 @@ const HealthLogPage = () => {
                 ) : logs.length > 0 ? (
                     <div className="health-log-list">
                         <AnimatePresence>
-                            {logs.sort((a,b) => new Date(b.log_date) - new Date(a.log_date)).map(log => (
+                            {validLogsForRender.map(log => (
                                 <HealthLogItem key={log.id} log={log} onEdit={handleOpenModal} onDelete={handleOpenDeleteModal} />
                             ))}
                         </AnimatePresence>

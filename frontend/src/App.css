@@ -471,3 +471,1512 @@ body {
     text-align: center;
     padding: 3rem;
 }
+/* Add these new styles to your App.css file */
+
+/* --- Dashboard Grid Layout --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Today's Schedule Sidebar --- */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.today-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.today-schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+}
+
+.today-schedule-item .time {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--primary-color);
+  background-color: #eef2ff;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  min-width: 70px;
+  text-align: center;
+}
+
+.today-schedule-item .details {
+  flex-grow: 1;
+}
+
+.today-schedule-item .medicine-name {
+  font-weight: 600;
+}
+
+.today-schedule-item .status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.today-schedule-item .actions .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.today-schedule-item.status-taken {
+  background-color: #f0fdf4;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.empty-state-text {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* --- Button Size Variant --- */
+.btn[size="sm"] {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+/* Add these new styles to your App.css file */
+
+/* --- Daily Progress Card --- */
+.daily-progress-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.progress-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background-color: #e2e8f0; /* Slate 200 */
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+body.dark .progress-bar-container {
+    background-color: rgba(0,0,0,0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  border-radius: 6px;
+}
+
+.progress-text {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  justify-self: end;
+}
+
+.progress-text-subtle {
+    font-style: italic;
+    color: var(--text-secondary);
+    justify-self: end;
+}
+
+.low-stock-alert {
+    background-color: #fffbeb;
+    color: #b45309;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border-left: 4px solid var(--warning-color);
+}
+
+body.dark .low-stock-alert {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* --- Dashboard Grid Layout --- */
+/* (This can be removed if you already added it) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+/* --- Stat Card Enhancements --- */
+.stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.stat-card.clickable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.stat-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.stat-card .stat-icon {
+    transition: color 0.2s;
+}
+.stat-card.active .stat-icon {
+    color: var(--primary-color);
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.stat-card .stat-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+
+/* ✅ NEW: Improved Medicine List Controls */
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-and-view {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bar .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.search-bar input {
+    background-color: var(--input-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.65rem 1rem 0.65rem 2.5rem;
+    font-size: 1rem;
+    width: 280px;
+    transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.view-toggle {
+    display: flex;
+    background-color: var(--input-background);
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.view-toggle button {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-toggle button.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+
+
+/* --- Stat Card Enhancements --- */
+.stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.stat-card.clickable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.stat-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.stat-card .stat-icon {
+    transition: color 0.2s;
+}
+.stat-card.active .stat-icon {
+    color: var(--primary-color);
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.stat-card .stat-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+
+/* --- Today's Schedule Sidebar Enhancements --- */
+.today-schedule-item .details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.today-schedule-item .status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.today-schedule-item.status-taken {
+  background-color: #f0fdf4;
+  border-left: 4px solid var(--success-color);
+}
+.today-schedule-item.status-taken .medicine-name {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.today-schedule-item.status-taken .status {
+    color: var(--success-color);
+}
+
+.today-schedule-item.status-skipped {
+  background-color: #fef2f2;
+  border-left: 4px solid var(--danger-color);
+  opacity: 0.8;
+}
+.today-schedule-item.status-skipped .status {
+    color: var(--danger-color);
+}
+
+/* ✅ NEW: Improved Medicine List Controls */
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-and-view {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bar .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.search-bar input {
+    background-color: var(--input-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.65rem 1rem 0.65rem 2.5rem;
+    font-size: 1rem;
+    width: 280px;
+    transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.view-toggle {
+    display: flex;
+    background-color: var(--input-background);
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.view-toggle button {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-toggle button.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* ✅ NEW: Redesigned Medicine List & Grid Items */
+.medicine-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.medicine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.medicine-item-redesigned {
+    display: grid;
+    grid-template-columns: auto 1fr 2fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.med-icon-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.med-icon-container svg {
+    width: 24px;
+    height: 24px;
+}
+
+.med-main-info .name {
+    font-weight: 700;
+    font-size: 1.125rem;
+    display: block;
+}
+
+.med-main-info .dosage {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.med-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.5rem 1rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.detail-item.notes {
+    grid-column: 1 / -1;
+}
+
+.detail-item.warning {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.medicine-item-redesigned.low-stock {
+  border-left: 4px solid var(--warning-color);
+}
+
+
+.medicine-grid-item-redesigned {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-grid-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+}
+
+.medicine-grid-item-redesigned .grid-item-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.medicine-grid-item-redesigned .grid-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.medicine-grid-item-redesigned .grid-item-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.medicine-grid-item-redesigned.low-stock {
+  border: 2px solid var(--warning-color);
+}
+/* --- Stat Card Enhancements --- */
+.stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.stat-card.clickable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.stat-card.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.stat-card .stat-icon {
+    transition: color 0.2s;
+}
+.stat-card.active .stat-icon {
+    color: var(--primary-color);
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.stat-card .stat-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+
+/* --- Today's Schedule Sidebar Enhancements --- */
+.today-schedule-item .details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.today-schedule-item .status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.today-schedule-item.status-taken {
+  background-color: #f0fdf4;
+  border-left: 4px solid var(--success-color);
+}
+.today-schedule-item.status-taken .medicine-name {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.today-schedule-item.status-taken .status {
+    color: var(--success-color);
+}
+
+.today-schedule-item.status-skipped {
+  background-color: #fef2f2;
+  border-left: 4px solid var(--danger-color);
+  opacity: 0.8;
+}
+.today-schedule-item.status-skipped .status {
+    color: var(--danger-color);
+}
+
+/* ✅ IMPROVED: Medicine List Controls */
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-and-view {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bar .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.search-bar input {
+    background-color: var(--input-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem 0.75rem 2.75rem; /* Adjusted padding */
+    font-size: 1rem;
+    width: 280px;
+    transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.view-toggle {
+    display: flex;
+    background-color: var(--input-background);
+    padding: 0.25rem;
+    border-radius: 0.75rem; /* Slightly more rounded */
+    border: 1px solid var(--border-color);
+}
+
+.view-toggle button {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 0.5rem; /* Consistent rounding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.view-toggle button.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    transform: scale(1.05);
+}
+
+/* ✅ IMPROVED: Redesigned Medicine List & Grid Items */
+.medicine-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.medicine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.medicine-item-redesigned {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 7px 15px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.med-icon-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.med-icon-container svg {
+    width: 24px;
+    height: 24px;
+}
+
+.med-main-info {
+    grid-column: 2 / 3;
+}
+
+.med-main-info .name {
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: block;
+    color: var(--text-primary);
+}
+
+.med-main-info .dosage {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.med-details-grid {
+    grid-column: 1 / -1; /* Span full width */
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.detail-item svg {
+    flex-shrink: 0;
+}
+
+.detail-item.notes {
+    grid-column: 1 / -1;
+}
+
+.detail-item.warning {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.medicine-item-redesigned .medicine-actions {
+    grid-column: 3 / 4;
+    justify-self: end;
+}
+
+.medicine-item-redesigned.low-stock {
+  border-left: 4px solid var(--warning-color);
+}
+
+
+.medicine-grid-item-redesigned {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-grid-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 7px 15px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.medicine-grid-item-redesigned .grid-item-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.medicine-grid-item-redesigned .grid-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.medicine-grid-item-redesigned .grid-item-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.medicine-grid-item-redesigned.low-stock {
+  border: 2px solid var(--warning-color);
+}
+/* Add these new styles to your App.css file */
+
+/* --- Autocomplete Suggestions --- */
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.suggestions-list li {
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.suggestions-list li:hover {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+/* frontend/src/App.css */
+
+/* --- ✅ NEW: Refined Colors & Theme Variables --- */
+:root {
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary-color: #10b981;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --warning-color: #f59e0b;
+  --success-color: #22c55e;
+  --focus-shadow: rgba(79, 70, 229, 0.1);
+  
+  /* ✅ UPDATED: Softer light mode with a blue-gray background */
+  --background-color: #f1f5f9; /* Slate 100 */
+  --card-background: #ffffff;
+  --border-color: #e2e8f0;     /* Slate 200 */
+  --input-background: #ffffff;
+  
+  --text-primary: #1e293b;   /* Slate 800 */
+  --text-secondary: #475569; /* Slate 600 */
+  --placeholder-color: #94a3b8; /* Slate 400 */
+  --text-on-primary: #ffffff;
+}
+
+body.dark {
+  --primary-color: #64ffda;
+  --primary-hover: #52d1b8;
+  --danger-color: #ff79c6;
+  --danger-hover: #f758b6;
+  --focus-shadow: rgba(100, 255, 218, 0.2);
+
+  /* ✅ UPDATED: Richer, less extreme dark theme */
+  --background-color: #0f172a;   /* Rich Navy (Slate 900) */
+  --card-background: #1e293b;     /* Lighter Navy (Slate 800) */
+  --border-color: #334155;       /* Slate 700 */
+  --input-background: #1e293b;
+
+  --text-primary: #f1f5f9;   /* Soft Off-White (Slate 100) */
+  --text-secondary: #94a3b8; /* Lighter Gray (Slate 400) */
+  --placeholder-color: #475569; /* Slate 600 */
+  --text-on-primary: #0a192f;
+}
+
+
+/* --- Base Styles --- */
+body {
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.card {
+    background: var(--card-background);
+    padding: 2rem;
+    border-radius: 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* --- Layout --- */
+.app-layout, .auth-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+/* --- Header & Navigation --- */
+.app-header {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(10px);
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 72px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+body.dark .app-header {
+    background-color: rgba(15, 23, 42, 0.8);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--primary-color);
+}
+
+.header-logo h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    transition: color 0.2s, background-color 0.2s;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    position: relative;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    background-color: rgba(128, 128, 128, 0.1);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+}
+
+.active-nav-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.logout-btn:hover {
+    color: var(--danger-color);
+    background-color: var(--danger-hover-bg, rgba(239, 68, 68, 0.1));
+}
+
+body.dark .logout-btn:hover {
+    --danger-hover-bg: rgba(255, 121, 198, 0.1);
+}
+
+/* --- Theme Toggle --- */
+.theme-toggle {
+    background-color: var(--input-background);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.theme-toggle:hover {
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+/* --- Forms & Inputs --- */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--placeholder-color);
+  opacity: 1;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: var(--card-background);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+/* --- Page Headers --- */
+.page-header {
+  margin-bottom: 2rem;
+}
+.page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.page-header p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+.dashboard-header-enhanced {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* --- Dashboard Top Grid --- */
+.dashboard-top-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .dashboard-top-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.stat-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+/* --- Redesigned Medicine List & Grid --- */
+.medicine-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.medicine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.medicine-item-redesigned {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 7px 15px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.med-icon-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.med-icon-container svg {
+    width: 24px;
+    height: 24px;
+}
+
+.med-main-info {
+    grid-column: 2 / 3;
+}
+
+.med-main-info .name {
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: block;
+    color: var(--text-primary);
+}
+
+.med-main-info .dosage {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.med-details-grid {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.detail-item svg {
+    flex-shrink: 0;
+}
+
+.detail-item.notes {
+    grid-column: 1 / -1;
+}
+
+.detail-item.warning {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.medicine-item-redesigned .medicine-actions {
+    grid-column: 3 / 4;
+    justify-self: end;
+}
+
+.medicine-item-redesigned.low-stock {
+  border-left: 4px solid var(--warning-color);
+}
+
+
+.medicine-grid-item-redesigned {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.medicine-grid-item-redesigned:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 7px 15px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.medicine-grid-item-redesigned .grid-item-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.medicine-grid-item-redesigned .grid-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.medicine-grid-item-redesigned .grid-item-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.medicine-grid-item-redesigned.low-stock {
+  border: 2px solid var(--warning-color);
+}
+
+.medicine-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.action-btn.delete:hover {
+  color: var(--danger-color);
+}
+
+.action-btn.ai:hover {
+    color: #a855f7;
+}
+
+/* --- Controls Header (Tabs, Search, etc.) --- */
+.controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-and-view {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bar .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.search-bar input {
+    background-color: var(--input-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    font-size: 1rem;
+    width: 280px;
+    transition: all 0.2s ease-in-out;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.view-toggle {
+    display: flex;
+    background-color: var(--input-background);
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+
+.view-toggle button {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.view-toggle button.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    transform: scale(1.05);
+}
+
+/* --- Today's Schedule Sidebar --- */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+.sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.today-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.today-schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--input-background);
+  border: 1px solid var(--border-color);
+}
+
+.today-schedule-item .time {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--primary-color);
+  background-color: var(--card-background);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  min-width: 70px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.today-schedule-item .details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.today-schedule-item .medicine-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.today-schedule-item .status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.today-schedule-item.status-taken {
+  background-color: #f0fdf4;
+  border-left: 4px solid var(--success-color);
+}
+
+body.dark .today-schedule-item.status-taken {
+    background-color: rgba(34, 197, 94, 0.1);
+}
+
+.today-schedule-item.status-taken .medicine-name {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.today-schedule-item.status-taken .status {
+    color: var(--success-color);
+}
+
+.today-schedule-item.status-skipped {
+  background-color: #fef2f2;
+  border-left: 4px solid var(--danger-color);
+  opacity: 0.8;
+}
+
+body.dark .today-schedule-item.status-skipped {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.today-schedule-item.status-skipped .status {
+    color: var(--danger-color);
+}
