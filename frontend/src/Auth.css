@@ -192,3 +192,26 @@
   font-weight: 600;
   text-align: center;
 }
+/* Add this to the end of frontend/src/Auth.css */
+
+.input-with-icon {
+  position: relative;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: none;
+  border: none;
+  padding: 0 1rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
+}

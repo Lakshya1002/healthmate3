@@ -4,21 +4,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/authContext';
-import { Pill, Mail, Key, User } from 'lucide-react';
+import { Pill, Mail, Key, User, Eye, EyeOff } from 'lucide-react'; // ✅ Import Eye and EyeOff icons
 import Button from '../components/ui/Button';
-
-// Google Icon SVG
-const GoogleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 12c0-6.627-5.373-12-12-12S0 5.373 0 12s5.373 12 12 12 12-5.373 12-12z" />
-    <path d="M12 22.5c-2.8 0-5.3-1-7.4-2.6" />
-    <path d="M12 1.5c2.8 0 5.3 1 7.4 2.6" />
-    <path d="M1.5 12c0-2.8 1-5.3 2.6-7.4" />
-    <path d="M22.5 12c0 2.8-1 5.3-2.6 7.4" />
-    <path d="M12 6.5c-3 0-5.5 2.5-5.5 5.5s2.5 5.5 5.5 5.5 5.5-2.5 5.5-5.5-2.5-5.5-5.5-5.5z" />
-    <path d="M12 6.5v0c1.5 0 2.8.6 3.8 1.6" />
-  </svg>
-);
+import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 
 // Animation variants for Framer Motion
 const containerVariants = {
@@ -41,9 +30,10 @@ const SignupPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // ✅ State for password visibility
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, googleLogin: authGoogleLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -59,6 +49,22 @@ const SignupPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    try {
+      await authGoogleLogin(credentialResponse.credential);
+      navigate('/');
+    } catch (err) {
+      setError('Google Sign-Up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Google Sign-Up failed. Please try again.');
   };
 
   return (
@@ -119,12 +125,20 @@ const SignupPage = () => {
                 <Key size={18} />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'} // ✅ Toggle input type
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Minimum 6 characters"
                 />
+                 {/* ✅ Add toggle button */}
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  className="password-toggle-btn"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
@@ -135,11 +149,12 @@ const SignupPage = () => {
           
           <motion.div className="auth-divider" variants={itemVariants}>OR</motion.div>
 
-          <motion.div variants={itemVariants}>
-            <Button className="btn-social">
-                <GoogleIcon />
-                Sign up with Google
-            </Button>
+          <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'center' }}>
+             <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap
+            />
           </motion.div>
 
           <motion.p variants={itemVariants} className="auth-footer-link">

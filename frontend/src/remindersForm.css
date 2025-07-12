@@ -1,4 +1,4 @@
-/* frontend/src/components/remindersForm.css */
+/* frontend/src/remindersForm.css */
 
 .reminder-form-container {
     padding: 0.5rem;
@@ -69,4 +69,85 @@
     text-align: center;
     color: var(--text-secondary);
     font-style: italic;
+}
+
+/* ✅ New Styles for Frequency and Day Pickers */
+.frequency-selector {
+    display: flex;
+    gap: 0.5rem;
+    background-color: var(--background-color);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    width: fit-content;
+}
+
+.frequency-btn {
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.frequency-btn:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+.frequency-btn.active {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.day-picker {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.day-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background-color: var(--background-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.day-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.day-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-on-primary);
+    transform: scale(1.1);
+}
+
+.interval-input {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.interval-input input {
+    width: 80px;
+    text-align: center;
+}
+
+.interval-input span {
+    font-weight: 600;
+    color: var(--text-secondary);
 }

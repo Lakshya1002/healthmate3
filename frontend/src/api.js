@@ -28,6 +28,10 @@ export const setAuthToken = (token) => {
 export const loginUser = (userData) => api.post('/auth/login', userData);
 export const registerUser = (userData) => api.post('/auth/register', userData);
 export const getMe = () => api.get('/auth/me');
+export const googleLogin = (googleData) => api.post('/auth/google', googleData);
+export const requestPasswordReset = (emailData) => api.post('/auth/forgot-password', emailData);
+export const resetPassword = (resetData) => api.post('/auth/reset-password', resetData);
+
 
 // --- Users ---
 export const getUserProfile = () => api.get('/users/profile');
@@ -39,7 +43,7 @@ export const fetchMedicineStats = () => api.get('/medicines/stats');
 export const addMedicine = (medicineData) => api.post('/medicines', medicineData);
 export const updateMedicine = (id, medicineData) => api.put(`/medicines/${id}`, medicineData);
 export const deleteMedicine = (id) => api.delete(`/medicines/${id}`);
-export const getMedicineSuggestions = (query) => api.get(`/medicines/suggestions?q=${query}`); // ✅ ADDED
+export const getMedicineSuggestions = (query) => api.get(`/medicines/suggestions?q=${query}`);
 
 // --- Health Logs ---
 export const fetchHealthLogs = () => api.get('/health-logs');

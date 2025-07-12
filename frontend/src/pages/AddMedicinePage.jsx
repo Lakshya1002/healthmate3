@@ -1,27 +1,17 @@
 // frontend/src/pages/AddMedicinePage.jsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { addMedicine } from '../api'; // Correct: Use named import
-import MedicineForm from '../components/MedicineForm';
+import MultiStepForm from '../components/MultiStepForm'; // ✅ Import the new component
 
 const AddMedicinePage = () => {
-    const navigate = useNavigate();
-
-    const handleAdd = async (formData) => {
-        await addMedicine(formData);
-        navigate('/dashboard'); // Navigate to dashboard, which will re-fetch data
-    };
-
     return (
-        <div className="container">
-            <div className="auth-container" style={{marginTop: '40px'}}>
-                <h2>Add New Medicine</h2>
-                <MedicineForm 
-                    onSubmit={handleAdd} 
-                    onCancel={() => navigate('/dashboard')} 
-                    submitText="Add Medicine" 
-                />
+        <div className="page-container" style={{ maxWidth: '800px' }}>
+            <div className="page-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h1>Add a New Medication</h1>
+                <p style={{ maxWidth: '60ch', margin: '0.5rem auto 0' }}>
+                    Let's add a new medication to your cabinet. Please provide the details in the steps below.
+                </p>
             </div>
+            <MultiStepForm />
         </div>
     );
 };

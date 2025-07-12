@@ -1,10 +1,12 @@
+// frontend/src/components/remindersForm.jsx
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addReminder } from '../api';
 import toast from 'react-hot-toast';
 import Button from './ui/Button';
 import { Pill, Clock, Search } from 'lucide-react';
-import '../remindersForm.css'; // Import the new CSS
+import '../remindersForm.css';
 
 const ReminderForm = ({ medicines, onSuccess, onCancel }) => {
     const [selectedMedicine, setSelectedMedicine] = useState(null);
@@ -15,7 +17,6 @@ const ReminderForm = ({ medicines, onSuccess, onCancel }) => {
     
     const dropdownRef = useRef(null);
 
-    // Filter medicines based on search term
     const filteredMedicines = useMemo(() => {
         if (!searchTerm) {
             return medicines;
@@ -25,7 +26,6 @@ const ReminderForm = ({ medicines, onSuccess, onCancel }) => {
         );
     }, [searchTerm, medicines]);
 
-    // Handle clicks outside the dropdown to close it
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,7 +44,7 @@ const ReminderForm = ({ medicines, onSuccess, onCancel }) => {
 
     const handleInputChange = (e) => {
         setSearchTerm(e.target.value);
-        setSelectedMedicine(null); // Clear selection when user types
+        setSelectedMedicine(null);
         setDropdownOpen(true);
     };
 

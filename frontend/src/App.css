@@ -2603,3 +2603,62 @@ body.dark .today-schedule-item.status-skipped {
 .today-schedule-item.status-skipped .status {
     color: var(--danger-color);
 }
+/* Add these styles to the end of frontend/src/App.css */
+
+.dose-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.dose-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+}
+
+.dose-status-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.dose-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.dose-time {
+    font-weight: 600;
+}
+
+.dose-medicine-name {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.dose-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Status-specific styles */
+.dose-item.status-taken .dose-status-icon {
+    color: var(--success-color);
+}
+.dose-item.status-taken .dose-details {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.dose-item.status-skipped .dose-status-icon {
+    color: var(--danger-color);
+}
+.dose-item.status-skipped .dose-details {
+    opacity: 0.6;
+}

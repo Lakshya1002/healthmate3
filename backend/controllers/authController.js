@@ -4,13 +4,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../config/db.js';
 import Joi from 'joi';
+import { OAuth2Client } from 'google-auth-library'; // ✅ Import Google Auth Library
+
+// --- Google Auth Client ---
+const client = new OAuth2Client(process.env.OAUTH_CLIENT_ID);
 
 // --- Helper Function ---
-/**
- * Generates a JSON Web Token (JWT) for a given user ID.
- * @param {number} id - The user's ID.
- * @returns {string} - The generated JWT.
- */
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -35,14 +34,57 @@ const loginSchema = Joi.object({
     password: Joi.string().required(),
 });
 
-
 // --- Controller Functions ---
 
 /**
- * @desc    Register a new user
- * @route   POST /api/auth/register
+ * @desc    Handle Google Sign-In
+ * @route   POST /api/auth/google
  * @access  Public
  */
+export const googleLogin = async (req, res) => {
+    const { credential } = req.body; // This is the token from Google
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.OAUTH_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        
+        const { email, name } = payload;
+
+        // Check if user already exists
+        const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        
+        let user = existingUsers[0];
+
+        // If user doesn't exist, create a new one
+        if (!user) {
+            const [result] = await db.query(
+                'INSERT INTO users (username, email) VALUES (?, ?)',
+                [name, email]
+            );
+            const [newUser] = await db.query('SELECT * FROM users WHERE id = ?', [result.insertId]);
+            user = newUser[0];
+        }
+
+        // Generate our own JWT for the user to use with our API
+        const token = generateToken(user.id);
+
+        res.status(200).json({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            token: token,
+        });
+
+    } catch (error) {
+        console.error('Google Login Error:', error);
+        res.status(401).json({ message: 'Google Sign-In failed. Please try again.' });
+    }
+};
+
+
 export const register = async (req, res) => {
     const { error } = registerSchema.validate(req.body);
     if (error) {
@@ -52,23 +94,19 @@ export const register = async (req, res) => {
     const { username, email, password } = req.body;
 
   try {
-    // Check if a user with the given email already exists
     const [existingUsers] = await db.query('SELECT email FROM users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
       return res.status(409).json({ message: 'A user with this email already exists.' });
     }
 
-    // Hash the user's password for security
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Insert the new user into the database
     const [result] = await db.query(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
       [username, email, hashedPassword]
     );
 
-    // Respond with the newly created user's info and a JWT
     res.status(201).json({
       id: result.insertId,
       username: username,
@@ -82,11 +120,6 @@ export const register = async (req, res) => {
   }
 };
 
-/**
- * @desc    Authenticate a user and get a token
- * @route   POST /api/auth/login
- * @access  Public
- */
 export const login = async (req, res) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
@@ -96,13 +129,14 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find the user by email
     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     const user = users[0];
 
-    // If user exists, compare the provided password with the stored hashed password
+    if (!user.password) {
+        return res.status(401).json({ message: 'This account was created with a social provider. Please use Google Sign-In.' });
+    }
+
     if (user && (await bcrypt.compare(password, user.password))) {
-      // Passwords match, send back user info and token
       res.json({
         id: user.id,
         username: user.username,
@@ -110,7 +144,6 @@ export const login = async (req, res) => {
         token: generateToken(user.id),
       });
     } else {
-      // User not found or password incorrect. Use a generic message for security.
       res.status(401).json({ message: 'Invalid credentials.' });
     }
   } catch (error) {
@@ -119,13 +152,7 @@ export const login = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get the current logged-in user's profile
- * @route   GET /api/auth/me
- * @access  Private (requires token)
- */
 export const getMe = async (req, res) => {
-    // The user's ID is attached to the request object by the `protect` middleware.
     try {
         const [users] = await db.query('SELECT id, username, email, created_at FROM users WHERE id = ?', [req.user.id]);
         const user = users[0];
@@ -133,7 +160,6 @@ export const getMe = async (req, res) => {
         if (user) {
             res.status(200).json(user);
         } else {
-            // This case is unlikely if the token is valid but good practice to have.
             res.status(404).json({ message: 'User not found.' });
         }
     } catch (error) {

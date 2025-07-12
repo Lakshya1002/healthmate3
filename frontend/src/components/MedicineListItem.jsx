@@ -1,81 +1,70 @@
-// frontend/src/components/MedicineListItem.jsx
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Edit, Trash2, Pill, Calendar, StickyNote, Syringe, Tablets, Bot, AlertTriangle, Sparkles, Repeat, Package } from 'lucide-react';
+// frontend/src/components/MedicineList.jsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { Pill, PlusCircle } from 'lucide-react';
+import Loader from "./Loader";
+import MedicineListItem from "./MedicineListItem";
+import MedicineGridItem from "./MedicineGridItem";
+import Button from "./ui/Button"; // Import the Button component
 
-const methodIcons = {
-  pill: { icon: <Pill />, color: '#3b82f6' },
-  tablet: { icon: <Tablets />, color: '#8b5cf6' },
-  syrup: { icon: <Bot />, color: '#10b981' },
-  injection: { icon: <Syringe />, color: '#ef4444' },
-};
+function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetInfo }) {
+  const navigate = useNavigate();
 
-const MedicineListItem = ({ med, index, onEdit, onDelete, onGetInfo }) => {
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.05 },
-    }),
-    exit: { opacity: 0, x: -50, transition: { duration: 0.3 } },
-  };
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  const isLowStock = med.quantity != null && med.refill_threshold != null && med.quantity <= med.refill_threshold;
-  const { icon, color } = methodIcons[med.method] || { icon: <Pill />, color: '#64748b' };
+  if (!medicines || medicines.length === 0) {
+    return (
+        <div className="empty-state" style={{ padding: '3rem', textAlign: 'center', border: '2px dashed var(--border-color)', borderRadius: '1rem' }}>
+            <Pill size={48} style={{ color: 'var(--text-secondary)', opacity: 0.5, marginBottom: '1rem' }}/>
+            <h3>Your Medicine Cabinet is Empty</h3>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '45ch', margin: '0 auto 1.5rem auto' }}>
+                It looks like you haven't added any medications yet. Click the button below to get started.
+            </p>
+            <Button onClick={() => navigate('/add')}>
+                <PlusCircle size={20} />
+                Add Your First Medicine
+            </Button>
+        </div>
+    );
+  }
 
   return (
-    <motion.li
-      custom={index}
-      variants={itemVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      layout
-      className={`medicine-item-redesigned ${isLowStock ? 'low-stock' : ''}`}
-    >
-      <div className="med-icon-container" style={{ backgroundColor: color }}>
-        {icon}
-      </div>
-      <div className="med-main-info">
-        <span className="name">{med.name}</span>
-        <span className="dosage">{med.dosage || "N/A"}</span>
-      </div>
-      <div className="med-details-grid">
-        <div className="detail-item">
-            <Repeat size={14} />
-            <span>{med.frequency || 'N/A'}</span>
-        </div>
-        <div className="detail-item">
-            <Calendar size={14} />
-            <span>{med.start_date?.slice(0, 10) || 'N/A'} to {med.end_date?.slice(0, 10) || 'Ongoing'}</span>
-        </div>
-        {med.quantity != null && (
-            <div className={`detail-item ${isLowStock ? 'warning' : ''}`}>
-                <Package size={14} />
-                <span>{med.quantity} left</span>
+    <div>
+        {viewMode === 'list' ? (
+            <ul className="medicine-list">
+                <AnimatePresence>
+                    {medicines.map((med, i) => (
+                        <MedicineListItem
+                            key={med.id}
+                            med={med}
+                            index={i}
+                            onEdit={() => onEdit(med)}
+                            onDelete={() => onDelete(med)}
+                            onGetInfo={() => onGetInfo(med)}
+                        />
+                    ))}
+                </AnimatePresence>
+            </ul>
+        ) : (
+            <div className="medicine-grid">
+                 <AnimatePresence>
+                    {medicines.map((med, i) => (
+                       <MedicineGridItem
+                            key={med.id}
+                            med={med}
+                            index={i}
+                            onEdit={() => onEdit(med)}
+                            onDelete={() => onDelete(med)}
+                            onGetInfo={() => onGetInfo(med)}
+                        />
+                    ))}
+                </AnimatePresence>
             </div>
         )}
-        {med.notes && (
-            <div className="detail-item notes">
-                <StickyNote size={14} />
-                <span>{med.notes}</span>
-            </div>
-        )}
-      </div>
-      <div className="medicine-actions">
-          <motion.button whileTap={{ scale: 0.9 }} onClick={onGetInfo} className="action-btn ai" aria-label="Get AI Info">
-            <Sparkles size={18} />
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={onEdit} className="action-btn edit" aria-label="Edit">
-            <Edit size={18} />
-          </motion.button>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={onDelete} className="action-btn delete" aria-label="Delete">
-            <Trash2 size={18} />
-          </motion.button>
-        </div>
-    </motion.li>
+    </div>
   );
-};
-
-export default MedicineListItem;
+}
+export default MedicineList;

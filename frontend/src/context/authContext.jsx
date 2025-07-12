@@ -1,12 +1,24 @@
 // frontend/src/context/authContext.jsx
 
 import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
-import { setAuthToken, loginUser, registerUser, getMe } from '../api';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { setAuthToken, loginUser, registerUser, getMe, googleLogin as apiGoogleLogin } from '../api';
 import Loader from '../components/Loader';
 
+// 1. Create the context
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+// 2. Create the custom hook for consuming the context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// 3. Create the provider component
+const AuthProviderComponent = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() => {
@@ -60,6 +72,13 @@ export const AuthProvider = ({ children }) => {
     setAuthToken(data.token);
     setUser({ id: data.id, username: data.username, email: data.email });
   };
+  
+  const googleLogin = async (googleCredential) => {
+    const { data } = await apiGoogleLogin({ credential: googleCredential });
+    localStorage.setItem('token', data.token);
+    setAuthToken(data.token);
+    setUser({ id: data.id, username: data.username, email: data.email });
+  };
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -74,6 +93,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
+    googleLogin,
     logout,
     theme,
     toggleTheme
@@ -86,6 +106,19 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
+
+// 4. Create the main exportable provider that includes the Google Provider
+export const AuthProvider = ({ children }) => {
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+    if (!googleClientId) {
+        console.error("FATAL ERROR: VITE_GOOGLE_CLIENT_ID is not defined in .env file.");
+        return <div>Configuration error: Google Client ID is missing.</div>;
+    }
+
+    return (
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <AuthProviderComponent>{children}</AuthProviderComponent>
+        </GoogleOAuthProvider>
+    );
 };

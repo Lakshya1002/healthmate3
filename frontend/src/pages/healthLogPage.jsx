@@ -1,3 +1,4 @@
+// frontend/src/pages/healthLogPage.jsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -107,7 +108,6 @@ const HealthLogPage = () => {
         return [...logs].sort((a, b) => new Date(b.log_date) - new Date(a.log_date));
     }, [logs]);
 
-    // Prepare data for charts, including parsing Blood Pressure
     const chartData = useMemo(() => {
         return [...logs].map(log => {
             const [systolic, diastolic] = log.blood_pressure?.includes('/') ? log.blood_pressure.split('/').map(Number) : [null, null];
@@ -131,7 +131,8 @@ const HealthLogPage = () => {
     };
 
     const handleSubmit = async (formData) => {
-        const promise = editingLog ? updateHealthLog(editingLog.id, formData) : addHealthLog(formData);
+        // ✅ FIXED: Use `editingLog.log_id` instead of `editingLog.id`
+        const promise = editingLog ? updateHealthLog(editingLog.log_id, formData) : addHealthLog(formData);
         try {
             await toast.promise(promise, {
                 loading: 'Saving log...',
@@ -145,13 +146,14 @@ const HealthLogPage = () => {
 
     const handleDelete = async () => {
         if (!editingLog) return;
+        // ✅ FIXED: Use `editingLog.log_id` for deletion as well
         try {
-            await toast.promise(deleteHealthLog(editingLog.id), {
+            await toast.promise(deleteHealthLog(editingLog.log_id), {
                 loading: 'Deleting log...',
                 success: 'Health log deleted!',
                 error: 'Failed to delete log.',
             });
-            handleCloseModal();
+            setIsDeleteModalOpen(false); // Close the modal on success
             fetchLogs();
         } catch (error) { /* Toast handles error */ }
     };
@@ -175,7 +177,7 @@ const HealthLogPage = () => {
                             </div>
                             <div className="charts-grid">
                                 <HealthChart 
-                                    key="bp-chart" // Unique key added
+                                    key="bp-chart"
                                     data={chartData}
                                     lines={[
                                         { dataKey: 'systolic', name: 'Systolic BP', color: '#8884d8'},
@@ -183,17 +185,17 @@ const HealthLogPage = () => {
                                     ]}
                                 />
                                 <HealthChart 
-                                    key="hr-chart" // Unique key added
+                                    key="hr-chart"
                                     data={chartData}
                                     lines={[{ dataKey: 'heart_rate', name: 'Heart Rate (bpm)', color: '#ff7300'}]}
                                 />
                                 <HealthChart 
-                                    key="weight-chart" // Unique key added
+                                    key="weight-chart"
                                     data={chartData}
                                     lines={[{ dataKey: 'weight', name: 'Weight (lbs)', color: '#387908'}]}
                                 />
                                  <HealthChart 
-                                    key="temp-chart" // Unique key added
+                                    key="temp-chart"
                                     data={chartData}
                                     lines={[{ dataKey: 'temperature', name: 'Temperature (°F)', color: '#ffc658'}]}
                                 />
@@ -213,7 +215,7 @@ const HealthLogPage = () => {
                             <div className="health-log-list">
                                 <AnimatePresence>
                                     {sortedLogs.map(log => (
-                                        <LogItem key={log.id} log={log} onEdit={handleOpenModal} onDelete={handleOpenDeleteModal} />
+                                        <LogItem key={log.log_id} log={log} onEdit={handleOpenModal} onDelete={handleOpenDeleteModal} />
                                     ))}
                                 </AnimatePresence>
                             </div>

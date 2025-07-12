@@ -1,11 +1,15 @@
+// frontend/src/components/MedicineList.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { Info } from 'lucide-react';
+import { Pill, PlusCircle } from 'lucide-react';
 import Loader from "./Loader";
 import MedicineListItem from "./MedicineListItem";
 import MedicineGridItem from "./MedicineGridItem";
+import Button from "./ui/Button"; // Import the Button component
 
 function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetInfo }) {
+  const navigate = useNavigate();
 
   if (isLoading) {
     return <Loader />;
@@ -13,9 +17,16 @@ function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetI
 
   if (!medicines || medicines.length === 0) {
     return (
-        <div className="empty-state">
-            <Info size={48} className="icon"/>
-            <p>No medicines found for this view.</p>
+        <div className="empty-state" style={{ padding: '3rem', textAlign: 'center', border: '2px dashed var(--border-color)', borderRadius: '1rem' }}>
+            <Pill size={48} style={{ color: 'var(--text-secondary)', opacity: 0.5, marginBottom: '1rem' }}/>
+            <h3>Your Medicine Cabinet is Empty</h3>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '45ch', margin: '0 auto 1.5rem auto' }}>
+                It looks like you haven't added any medications yet. Click the button below to get started.
+            </p>
+            <Button onClick={() => navigate('/add')}>
+                <PlusCircle size={20} />
+                Add Your First Medicine
+            </Button>
         </div>
     );
   }
@@ -32,7 +43,7 @@ function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetI
                             index={i}
                             onEdit={() => onEdit(med)}
                             onDelete={() => onDelete(med)}
-                            onGetInfo={() => onGetInfo(med)} // ✅ Pass handler
+                            onGetInfo={() => onGetInfo(med)}
                         />
                     ))}
                 </AnimatePresence>
@@ -47,7 +58,7 @@ function MedicineList({ medicines, isLoading, viewMode, onEdit, onDelete, onGetI
                             index={i}
                             onEdit={() => onEdit(med)}
                             onDelete={() => onDelete(med)}
-                            onGetInfo={() => onGetInfo(med)} // ✅ Pass handler
+                            onGetInfo={() => onGetInfo(med)}
                         />
                     ))}
                 </AnimatePresence>

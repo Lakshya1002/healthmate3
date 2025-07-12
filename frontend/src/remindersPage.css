@@ -1,6 +1,5 @@
 /* frontend/src/remindersPage.css */
 
-/* --- Page Header --- */
 .reminders-header-pro {
   display: grid;
   grid-template-columns: 1fr;
@@ -29,7 +28,6 @@
   margin: 0;
 }
 
-/* --- Circular Progress Chart --- */
 .progress-chart-container {
   display: flex;
   gap: 1.5rem;
@@ -85,15 +83,14 @@
   border-radius: 50%;
 }
 
-/* --- Timeline Layout --- */
 .timeline-container {
   position: relative;
-  padding-left: 50px; /* Increased space for a cleaner look */
+  padding-left: 50px;
 }
 
 .timeline-line {
   position: absolute;
-  left: 18px; /* Centered in the padding */
+  left: 18px;
   top: 10px;
   bottom: 10px;
   width: 4px;
@@ -141,12 +138,11 @@
   gap: 1rem;
 }
 
-/* --- Timeline Reminder Card --- */
 .timeline-card {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.25rem; /* Increased padding */
+  padding: 1.25rem;
   border-radius: 1rem;
   border: 1px solid var(--border-color);
   background-color: var(--card-background);
@@ -162,7 +158,7 @@
 
 .timeline-card .icon-status {
   flex-shrink: 0;
-  width: 44px; /* Slightly larger */
+  width: 44px;
   height: 44px;
   border-radius: 50%;
   display: flex;
@@ -192,7 +188,6 @@
   gap: 0.5rem;
 }
 
-/* --- Status-specific styles --- */
 .timeline-card.status-scheduled .icon-status {
   background-color: var(--text-secondary);
 }
@@ -218,7 +213,6 @@
   opacity: 0.6;
 }
 
-/* --- Empty State --- */
 .reminders-empty-state {
     text-align: center;
     padding: 4rem 2rem;

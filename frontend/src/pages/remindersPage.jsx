@@ -1,3 +1,5 @@
+// frontend/src/pages/remindersPage.jsx
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -8,12 +10,11 @@ import Loader from '../components/Loader';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ReminderForm from '../components/remindersForm';
-import '../remindersPage.css'; // Correct path to src/remindersPage.css
+import '../remindersPage.css';
 
-// --- Sub-component for the Progress Chart ---
 const ProgressChart = ({ value, total }) => {
     const percentage = total > 0 ? (value / total) * 100 : 0;
-    const circumference = 2 * Math.PI * 45; // 2 * pi * radius
+    const circumference = 2 * Math.PI * 45;
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
@@ -43,8 +44,6 @@ const ProgressChart = ({ value, total }) => {
     );
 };
 
-
-// --- Sub-component for a single Timeline Card ---
 const TimelineCard = ({ reminder, onUpdateStatus, onDelete }) => {
     const statusIcons = {
         scheduled: <Clock size={20} />,
@@ -80,7 +79,6 @@ const TimelineCard = ({ reminder, onUpdateStatus, onDelete }) => {
 };
 
 
-// --- Main Reminders Page Component ---
 const RemindersPage = () => {
     const [reminders, setReminders] = useState([]);
     const [medicines, setMedicines] = useState([]);

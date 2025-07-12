@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
-import { fetchMedicines, fetchMedicineStats, fetchReminders, updateReminderStatus } from '../api';
+import { fetchMedicines, fetchMedicineStats } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
 
 import Loader from '../components/Loader';
 import EditModal from '../components/EditModal';
@@ -15,26 +14,7 @@ import MedicineList from '../components/MedicineList';
 import StatCard from '../components/StatCard';
 import Button from '../components/ui/Button';
 
-import { Pill, Check, Clock, Search, List, LayoutGrid, Plus, Bell, XCircle, CheckCircle } from 'lucide-react';
-
-const TodayScheduleItem = ({ reminder, onUpdateStatus }) => (
-    <div className={`today-schedule-item status-${reminder.status}`}>
-        <div className="time">{reminder.reminder_time.slice(0, 5)}</div>
-        <div className="details">
-            <span className="medicine-name">{reminder.medicine_name}</span>
-            <span className="status">
-                {reminder.status === 'taken' && <CheckCircle size={14} />}
-                {reminder.status === 'skipped' && <XCircle size={14} />}
-                Status: {reminder.status}
-            </span>
-        </div>
-        {reminder.status === 'scheduled' && (
-            <div className="actions">
-                <Button onClick={() => onUpdateStatus(reminder.id, 'taken')} size="sm">Take</Button>
-            </div>
-        )}
-    </div>
-);
+import { Pill, Check, Clock, Search, List, LayoutGrid, Plus } from 'lucide-react';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -42,7 +22,6 @@ const Dashboard = () => {
 
     const [medicines, setMedicines] = useState([]);
     const [stats, setStats] = useState({ totalMedicines: 0, activeMedicines: 0, completedMedicines: 0 });
-    const [reminders, setReminders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     
     const [activeTab, setActiveTab] = useState('active');
@@ -56,14 +35,12 @@ const Dashboard = () => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [medsRes, statsRes, remindersRes] = await Promise.all([
+            const [medsRes, statsRes] = await Promise.all([
                 fetchMedicines(),
                 fetchMedicineStats(),
-                fetchReminders()
             ]);
             setMedicines(medsRes.data);
             setStats(statsRes.data);
-            setReminders(remindersRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -94,25 +71,6 @@ const Dashboard = () => {
             );
     }, [medicines, activeTab, searchQuery]);
 
-    const todaysReminders = useMemo(() => {
-        return reminders.sort((a, b) => a.reminder_time.localeCompare(b.reminder_time));
-    }, [reminders]);
-    
-    const handleUpdateReminderStatus = async (id, status) => {
-        const promise = updateReminderStatus(id, status);
-        toast.promise(promise, {
-            loading: 'Updating status...',
-            success: 'Status updated!',
-            error: 'Failed to update status.',
-        });
-        try {
-            await promise;
-            fetchData();
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     const handleEdit = (medicine) => setEditingMedicine(medicine);
     const handleDeleteRequest = (medicine) => setDeletingMedicine(medicine);
     const handleGetInfo = (medicine) => setInfoMedicine(medicine);
@@ -122,12 +80,7 @@ const Dashboard = () => {
         setDeletingMedicine(null);
         setInfoMedicine(null);
     };
-
-    const handleConfirmDelete = async () => {
-        if (!deletingMedicine) return;
-        // ... (delete logic remains the same)
-    };
-
+    
     const handleActionSuccess = () => {
         fetchData();
         closeModal();
@@ -142,7 +95,7 @@ const Dashboard = () => {
             <div className="page-header dashboard-header-enhanced">
                 <div>
                     <h1>Welcome, {user?.username}!</h1>
-                    <p>Here’s your health summary for today.</p>
+                    <p>Here’s your health summary.</p>
                 </div>
                 <Button onClick={() => navigate('/add')}>
                     <Plus size={20} />
@@ -156,54 +109,32 @@ const Dashboard = () => {
                 <StatCard icon={<Clock size={28} />} value={stats.completedMedicines || 0} label="Past" onClick={() => setActiveTab('past')} isActive={activeTab === 'past'} />
             </div>
 
-            <div className="dashboard-grid">
-                <div className="main-content">
-                    <div className="card">
-                        <div className="controls-header">
-                            <div className="search-and-view">
-                                <div className="search-bar">
-                                    <Search className="icon" size={18} />
-                                    <input type="text" placeholder="Search medicines..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                                </div>
-                                <div className="view-toggle">
-                                    <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}><List size={20} /></button>
-                                    <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}><LayoutGrid size={20} /></button>
-                                </div>
-                            </div>
+            <div className="card">
+                <div className="controls-header">
+                    <div className="search-and-view">
+                        <div className="search-bar">
+                            <Search className="icon" size={18} />
+                            <input type="text" placeholder="Search medicines..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                         </div>
-                        <MedicineList
-                            medicines={filteredMedicines}
-                            isLoading={isLoading}
-                            viewMode={viewMode}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteRequest}
-                            onGetInfo={handleGetInfo}
-                        />
+                        <div className="view-toggle">
+                            <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}><List size={20} /></button>
+                            <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')}><LayoutGrid size={20} /></button>
+                        </div>
                     </div>
                 </div>
-                
-                <aside className="sidebar-content">
-                    <div className="card">
-                        <div className="sidebar-header">
-                            <Bell size={20} />
-                            <h2>Today's Schedule</h2>
-                        </div>
-                        <div className="today-schedule-list">
-                            {todaysReminders.length > 0 ? (
-                                todaysReminders.map(r => (
-                                    <TodayScheduleItem key={r.id} reminder={r} onUpdateStatus={handleUpdateReminderStatus} />
-                                ))
-                            ) : (
-                                <p className="empty-state-text">No reminders scheduled for today.</p>
-                            )}
-                        </div>
-                    </div>
-                </aside>
+                <MedicineList
+                    medicines={filteredMedicines}
+                    isLoading={isLoading}
+                    viewMode={viewMode}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteRequest}
+                    onGetInfo={handleGetInfo}
+                />
             </div>
 
             <AnimatePresence>
                 {editingMedicine && <EditModal isOpen={!!editingMedicine} onClose={closeModal} medicine={editingMedicine} onSuccess={handleActionSuccess} />}
-                {deletingMedicine && <DeleteConfirmModal isOpen={!!deletingMedicine} onClose={closeModal} onConfirm={handleConfirmDelete} medicineName={deletingMedicine.name} />}
+                {deletingMedicine && <DeleteConfirmModal isOpen={!!deletingMedicine} onClose={closeModal} medicine={deletingMedicine} onSuccess={handleActionSuccess} />}
                 {infoMedicine && <AiInfoModal medicineName={infoMedicine.name} onClose={closeModal} />}
             </AnimatePresence>
         </div>

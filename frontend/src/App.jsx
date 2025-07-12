@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +11,7 @@ import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/loginPage';
 import SignupPage from './pages/signupPage';
 import HealthLogPage from './pages/healthLogPage';
-import RemindersPage from './pages/RemindersPage';
+import RemindersPage from './pages/remindersPage';
 import ProfilePage from './pages/ProfilePage';
 import ThemeToggle from './components/ui/ThemeToggle';
 
