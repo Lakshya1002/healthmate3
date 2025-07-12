@@ -1,0 +1,246 @@
+/* frontend/src/remindersPage.css */
+
+/* --- Page Header --- */
+.reminders-header-pro {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+  .reminders-header-pro {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.reminders-header-pro h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.reminders-header-pro p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 60ch;
+  margin: 0;
+}
+
+/* --- Circular Progress Chart --- */
+.progress-chart-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.progress-chart {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-chart-bg,
+.progress-chart-fg {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transform: rotate(-90deg 50px 50px);
+}
+
+.progress-chart-bg {
+  stroke: var(--background-color);
+}
+
+.progress-chart-fg {
+  stroke: var(--primary-color);
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+.progress-chart-text {
+  position: absolute;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.progress-details .stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.progress-details .stat .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* --- Timeline Layout --- */
+.timeline-container {
+  position: relative;
+  padding-left: 50px; /* Increased space for a cleaner look */
+}
+
+.timeline-line {
+  position: absolute;
+  left: 18px; /* Centered in the padding */
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  background-color: var(--border-color);
+  border-radius: 2px;
+}
+
+.timeline-group {
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.timeline-group:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-time {
+  position: absolute;
+  left: -50px;
+  top: -2px;
+  transform: translateX(-100%);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  background-color: var(--card-background);
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 10px; 
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  border: 4px solid var(--card-background);
+}
+
+.timeline-reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* --- Timeline Reminder Card --- */
+.timeline-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem; /* Increased padding */
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-background);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.timeline-card:hover {
+  transform: translateY(-3px) translateX(5px);
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.06);
+}
+
+.timeline-card .icon-status {
+  flex-shrink: 0;
+  width: 44px; /* Slightly larger */
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.timeline-card .details {
+  flex-grow: 1;
+}
+
+.timeline-card .medicine-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.timeline-card .status-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.timeline-card .actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* --- Status-specific styles --- */
+.timeline-card.status-scheduled .icon-status {
+  background-color: var(--text-secondary);
+}
+.timeline-card.status-taken .icon-status {
+  background-color: var(--success-color);
+}
+.timeline-card.status-skipped .icon-status {
+  background-color: var(--danger-color);
+}
+
+.timeline-card.status-taken {
+  background-color: rgba(34, 197, 94, 0.05);
+}
+.timeline-card.status-taken .medicine-name {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.timeline-card.status-skipped {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+.timeline-card.status-skipped .medicine-name {
+  opacity: 0.6;
+}
+
+/* --- Empty State --- */
+.reminders-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--card-background);
+    border: 2px dashed var(--border-color);
+    border-radius: 1.5rem;
+}
+
+.reminders-empty-state .icon {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.reminders-empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.reminders-empty-state p {
+    color: var(--text-secondary);
+    max-width: 45ch;
+    margin: 0 auto 1.5rem auto;
+}

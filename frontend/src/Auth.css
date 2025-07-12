@@ -1,0 +1,194 @@
+/* frontend/src/Auth.css */
+
+/* --- Clean, Centered Auth Layout --- */
+.auth-layout-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  /* The background is now the simple, theme-aware color from App.css */
+  background-color: var(--background-color);
+  transition: background-color 0.3s ease;
+}
+
+/* --- Solid, Elevated Form Card --- */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  /* Use solid theme colors for a clean look */
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  /* A more defined shadow to lift the card off the page */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* --- Form Content Styling --- */
+.auth-card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-card-header .logo-icon {
+  display: inline-block;
+  padding: 0.875rem;
+  background: var(--primary-color);
+  color: var(--text-on-primary);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px -2px var(--primary-color);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.auth-card-header .auth-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  /* Use theme text color */
+  color: var(--text-primary);
+}
+
+.auth-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.auth-form .form-group label {
+  font-weight: 600; /* Bolder label */
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.input-with-icon input {
+  /* Use theme input colors */
+  background: var(--input-background);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding-left: 2.75rem;
+}
+
+.input-with-icon input::placeholder {
+    color: var(--placeholder-color);
+}
+
+.input-with-icon input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--focus-shadow);
+}
+
+.input-with-icon svg {
+  color: var(--placeholder-color);
+}
+
+/* --- Buttons --- */
+.btn-auth-premium {
+  width: 100%;
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  border: none;
+  background: var(--primary-color);
+  color: var(--text-on-primary);
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+  box-shadow: 0 4px 14px 0 var(--primary-color);
+}
+
+.btn-auth-premium:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 var(--primary-color);
+}
+
+.btn-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background: var(--card-background);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.btn-social:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--background-color);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin: 1.5rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.auth-divider:not(:empty)::before {
+  margin-right: .5em;
+}
+
+.auth-divider:not(:empty)::after {
+  margin-left: .5em;
+}
+
+/* --- Links --- */
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+}
+
+.auth-options a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.auth-options a:hover {
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+
+.auth-footer-link {
+  text-align: center;
+  margin-top: 2rem;
+  color: var(--text-secondary);
+}
+
+.auth-footer-link a {
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.auth-footer-link a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}

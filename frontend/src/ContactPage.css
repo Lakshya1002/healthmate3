@@ -1,0 +1,128 @@
+/* frontend/src/ContactPage.css */
+
+.contact-page-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  max-width: 1100px;
+  margin: 2rem auto;
+  background-color: var(--card-background);
+  padding: 3rem;
+  border-radius: 1.5rem;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .contact-page-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* --- Info Panel (Left Side) --- */
+.contact-info-panel h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.contact-info-panel .subtitle {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  max-width: 45ch;
+  line-height: 1.6;
+}
+
+.contact-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contact-info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.contact-info-item .icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+  transition: all 0.3s ease;
+}
+
+.contact-info-item:hover .icon {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px -3px var(--primary-color);
+}
+
+
+.contact-info-item .details h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contact-info-item .details p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.contact-socials {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.contact-socials h4 {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--input-background);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.social-link:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+
+/* --- Form Panel (Right Side) --- */
+.contact-form-panel {
+  background-color: var(--background-color);
+  padding: 2.5rem;
+  border-radius: 1rem;
+}

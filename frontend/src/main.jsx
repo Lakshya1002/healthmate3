@@ -4,22 +4,24 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import './index.css';
 import './App.css';
+import './Auth.css'; // ✅ ADDED: Import the new professional auth styles
 
-import { BrowserRouter } from 'react-router-dom'; // ✅ Added
-import { AuthProvider } from './context/authContext'; // ✅ Already present
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/authContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter> {/* ✅ Needed for routing */}
+    <BrowserRouter>
       <AuthProvider>
         <App />
         <Toaster
           position="bottom-right"
           toastOptions={{
+            className: 'hot-toast',
             style: {
-              background: '#363636',
-              color: '#fff',
-              border: '1px solid #4a4a4a',
+              background: 'var(--card-background)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
             },
           }}
         />

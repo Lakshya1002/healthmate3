@@ -1,0 +1,72 @@
+/* frontend/src/components/remindersForm.css */
+
+.reminder-form-container {
+    padding: 0.5rem;
+}
+
+.searchable-dropdown {
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input-wrapper .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--placeholder-color);
+}
+
+.searchable-dropdown input {
+    padding-left: 2.75rem !important;
+}
+
+.dropdown-list {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: var(--background-color);
+}
+
+.dropdown-item.selected {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+.dropdown-item .icon {
+    color: var(--text-secondary);
+}
+
+.dropdown-item.selected .icon {
+    color: var(--text-on-primary);
+}
+
+.empty-dropdown {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}

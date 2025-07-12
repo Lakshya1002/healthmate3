@@ -1,0 +1,210 @@
+/* frontend/src/ProfilePage.css */
+
+.profile-page-container {
+  max-width: 1100px; /* Increased max-width for a more spacious layout */
+  margin: 0 auto;
+}
+
+.profile-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-header h1 {
+  font-size: 2.75rem; /* Larger title */
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.profile-header p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 992px) {
+  .profile-layout {
+    grid-template-columns: 280px 1fr; /* Wider sidebar */
+    gap: 3rem;
+  }
+}
+
+/* --- Sidebar with User Avatar Panel --- */
+.profile-sidebar {
+    background-color: var(--card-background);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    align-self: start; /* Makes the sidebar stick to the top */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.avatar-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.avatar-initials {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    border: 4px solid var(--card-background);
+    box-shadow: 0 0 0 4px var(--primary-color);
+}
+
+.edit-avatar-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-avatar-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.user-avatar-panel h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.user-avatar-panel p {
+    color: var(--text-secondary);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.profile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-nav-link:hover {
+  background-color: var(--background-color);
+  color: var(--text-primary);
+}
+
+.profile-nav-link.active {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+  box-shadow: 0 4px 15px -2px var(--primary-color);
+}
+
+/* --- Content Panel --- */
+.profile-content {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.profile-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* --- Danger Zone --- */
+.danger-zone {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+body.dark .danger-zone {
+     background-color: rgba(255, 121, 198, 0.05);
+     border-color: var(--danger-color);
+}
+
+.danger-zone h3 {
+    color: var(--danger-color);
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.danger-zone p {
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem 0;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-hover);
+    box-shadow: 0 4px 15px -2px var(--danger-color);
+}
