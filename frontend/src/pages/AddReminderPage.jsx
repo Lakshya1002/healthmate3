@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchMedicines, addReminder } from '../api';
+import { fetchMedicines, addReminder, fetchReminders } from '../api';
 import ReminderForm from '../components/remindersForm';
 import Loader from '../components/Loader';
 import { ArrowLeft } from 'lucide-react';
@@ -10,32 +10,34 @@ import Button from '../components/ui/Button';
 
 const AddReminderPage = () => {
     const [medicines, setMedicines] = useState([]);
+    const [reminders, setReminders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    const loadMedicines = useCallback(async () => {
+    const loadData = useCallback(async () => {
         try {
-            const { data } = await fetchMedicines();
-            setMedicines(data);
+            const [medicinesRes, remindersRes] = await Promise.all([
+                fetchMedicines(),
+                fetchReminders()
+            ]);
+            setMedicines(medicinesRes.data);
+            setReminders(remindersRes.data);
         } catch (error) {
-            console.error("Failed to fetch medicines for reminder form", error);
+            console.error("Failed to fetch data for reminder form", error);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        loadMedicines();
-    }, [loadMedicines]);
+        loadData();
+    }, [loadData]);
 
     const handleSuccess = () => {
-        // The toast notification is now handled within the form component
         navigate('/reminders');
     };
 
     const handleSave = async (formData) => {
-        // This function just needs to make the API call.
-        // The form component will show its own loading state and toast messages.
         await addReminder(formData);
     };
 
@@ -56,6 +58,7 @@ const AddReminderPage = () => {
             </div>
             <ReminderForm 
                 medicines={medicines}
+                reminders={reminders}
                 onSave={handleSave}
                 onSuccess={handleSuccess}
                 onCancel={() => navigate('/reminders')}

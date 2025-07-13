@@ -1,11 +1,30 @@
 // frontend/src/components/remindersForm.jsx
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Button from './ui/Button';
-import { Pill, Clock, Search, Sun, Moon, Sunset, Sunrise, Repeat, CalendarDays, Hash } from 'lucide-react';
+import { Pill, Clock, Search, Sun, Moon, Sunset, Sunrise, Repeat, CalendarDays, Hash, AlertTriangle, Edit } from 'lucide-react';
 import '../remindersForm.css';
+
+// Helper function to determine the max number of reminders based on frequency text
+const getReminderLimit = (frequency) => {
+    if (!frequency) return Infinity;
+    const freq = frequency.toLowerCase();
+    if (freq.includes('once a day')) return 1;
+    if (freq.includes('twice a day')) return 2;
+    if (freq.includes('thrice a day')) return 3;
+    const timesMatch = freq.match(/(\d+)\s+times a day/);
+    if (timesMatch) return parseInt(timesMatch[1], 10);
+    const hoursMatch = freq.match(/every\s+(\d+)\s+hours/);
+    if (hoursMatch) {
+        const hours = parseInt(hoursMatch[1], 10);
+        return hours > 0 ? Math.floor(24 / hours) : Infinity;
+    }
+    return Infinity; // No limit for other custom or unknown frequencies
+};
+
 
 // A preview component to show what the reminder will look like.
 const ReminderPreview = ({ medicineName, time, frequency, days }) => {
@@ -41,19 +60,19 @@ const ReminderPreview = ({ medicineName, time, frequency, days }) => {
     )
 }
 
-const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = null, submitText = 'Submit' }) => {
+const ReminderForm = ({ medicines, reminders, onSuccess, onCancel, onSave, initialData = null, submitText = 'Submit' }) => {
     const [selectedMedicine, setSelectedMedicine] = useState(null);
     const [time, setTime] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     
-    // ✅ ADDED: State for frequency management
     const [frequency, setFrequency] = useState('daily'); // 'daily', 'weekly', 'interval'
     const [selectedDays, setSelectedDays] = useState([]); // For 'weekly'
     const [dayInterval, setDayInterval] = useState(''); // For 'interval'
     
     const dropdownRef = useRef(null);
+    const navigate = useNavigate();
     const weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     // Effect to populate form with initial data for editing
@@ -66,7 +85,6 @@ const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = nu
             }
             setTime(initialData.reminder_time ? initialData.reminder_time.slice(0, 5) : '');
             
-            // ✅ ADDED: Populate frequency from initial data
             const freq = initialData.frequency || 'daily';
             setFrequency(freq);
             if (freq === 'weekly' && initialData.week_days) {
@@ -76,6 +94,21 @@ const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = nu
             }
         }
     }, [initialData, medicines]);
+
+    const { isLimitReached, limit, existingCount } = useMemo(() => {
+        if (!selectedMedicine) return { isLimitReached: false, limit: Infinity, existingCount: 0 };
+
+        const reminderLimit = getReminderLimit(selectedMedicine.frequency);
+        const currentReminders = reminders.filter(r =>
+            r.medicine_id === selectedMedicine.id && r.id !== initialData?.id
+        ).length;
+
+        return {
+            isLimitReached: currentReminders >= reminderLimit,
+            limit: reminderLimit,
+            existingCount: currentReminders
+        };
+    }, [selectedMedicine, reminders, initialData]);
 
     const filteredMedicines = useMemo(() => {
         if (!searchTerm) return medicines;
@@ -114,6 +147,10 @@ const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = nu
         e.preventDefault();
         if (!selectedMedicine || !time) {
             toast.error("Please select a medicine and a time.");
+            return;
+        }
+        if (isLimitReached) {
+            toast.error(`You can only add ${limit} reminder(s) for this medicine based on its frequency.`);
             return;
         }
         if (frequency === 'weekly' && selectedDays.length === 0) {
@@ -188,6 +225,35 @@ const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = nu
                         </AnimatePresence>
                     </div>
                 </div>
+
+                <AnimatePresence>
+                    {isLimitReached && selectedMedicine && (
+                         <motion.div 
+                            className="limit-warning-box"
+                            initial={{ opacity: 0, height: 0, y: -20 }}
+                            animate={{ opacity: 1, height: 'auto', y: 0 }}
+                            exit={{ opacity: 0, height: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                         >
+                            <AlertTriangle />
+                            <div>
+                                <h4>Reminder Limit Reached</h4>
+                                <p>
+                                    This medicine is set to be taken <strong>{selectedMedicine.frequency.toLowerCase()}</strong>. You have already set {existingCount} of {limit} reminders.
+                                </p>
+                                <button
+                                    type="button"
+                                    className="btn-link-warning"
+                                    onClick={() => navigate('/')}
+                                >
+                                    <Edit size={14} />
+                                    <span>Change Medicine Frequency</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="form-group">
                     <label>2. Choose Frequency</label>
                     <div className="frequency-selector">
@@ -239,7 +305,7 @@ const ReminderForm = ({ medicines, onSuccess, onCancel, onSave, initialData = nu
                 </div>
                 <div className="modal-actions" style={{marginTop: 'auto', paddingTop: '2rem'}}>
                     {onCancel && <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>}
-                    <Button type="submit" disabled={isLoading || !selectedMedicine}>
+                    <Button type="submit" disabled={isLoading || !selectedMedicine || isLimitReached}>
                         {isLoading ? 'Saving...' : submitText}
                     </Button>
                 </div>

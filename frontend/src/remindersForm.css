@@ -67,7 +67,7 @@
     font-style: italic;
 }
 
-/* ✅ Styles for Add/Edit Reminder Page */
+/* Styles for Add/Edit Reminder Page */
 
 .add-reminder-layout {
     display: grid;
@@ -184,7 +184,7 @@
     margin-top: 0.25rem;
 }
 
-/* ✅ ADDED: Styles for new frequency controls */
+/* Styles for new frequency controls */
 .frequency-selector {
     display: flex;
     gap: 0.5rem;
@@ -264,4 +264,72 @@
 .interval-input span {
     font-weight: 600;
     color: var(--text-secondary);
+}
+
+/* ✅ NEW: Styles for the reminder limit warning box */
+.limit-warning-box {
+    display: flex;
+    gap: 1rem;
+    background-color: rgba(245, 158, 11, 0.1); /* warning-color with opacity */
+    color: #b45309; /* Darker warning text for light mode */
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-left: 4px solid var(--warning-color);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+body.dark .limit-warning-box {
+    color: #fcd34d; /* Lighter warning text for dark mode */
+}
+
+.limit-warning-box svg {
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.limit-warning-box h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.limit-warning-box p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.btn-link-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #92400e; /* Darker amber for better contrast */
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.75rem;
+}
+
+body.dark .btn-link-warning {
+    color: #fcd34d;
+    background-color: rgba(252, 211, 77, 0.15);
+    border-color: rgba(252, 211, 77, 0.3);
+}
+
+.btn-link-warning:hover {
+    background-color: rgba(245, 158, 11, 0.25);
+    border-color: rgba(245, 158, 11, 0.5);
+}
+
+body.dark .btn-link-warning:hover {
+    background-color: rgba(252, 211, 77, 0.25);
+    border-color: rgba(252, 211, 77, 0.5);
 }

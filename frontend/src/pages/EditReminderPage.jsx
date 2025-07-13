@@ -11,6 +11,7 @@ import Button from '../components/ui/Button';
 
 const EditReminderPage = () => {
     const [medicines, setMedicines] = useState([]);
+    const [reminders, setReminders] = useState([]);
     const [initialData, setInitialData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -25,6 +26,7 @@ const EditReminderPage = () => {
             ]);
             
             setMedicines(medicinesRes.data);
+            setReminders(remindersRes.data);
 
             const reminderToEdit = remindersRes.data.find(r => r.id.toString() === id);
             
@@ -71,6 +73,7 @@ const EditReminderPage = () => {
             </div>
             <ReminderForm 
                 medicines={medicines}
+                reminders={reminders}
                 onSave={handleSave}
                 onSuccess={handleSuccess}
                 onCancel={() => navigate('/reminders')}
