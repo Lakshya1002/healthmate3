@@ -1,54 +1,74 @@
 // frontend/src/pages/remindersPage.jsx
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Bell, Check, X, Trash2, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, Check, X, Trash2, Plus, Clock, CheckCircle, XCircle, Edit, CalendarDays, Repeat, Hash } from 'lucide-react';
 
-import { fetchReminders, updateReminderStatus, deleteReminder, fetchMedicines } from '../api';
+import { fetchReminders, updateReminder, deleteReminder } from '../api';
 import Loader from '../components/Loader';
 import Button from '../components/ui/Button';
-import Modal from '../components/ui/Modal';
-import ReminderForm from '../components/remindersForm';
 import '../remindersPage.css';
 
-const ProgressChart = ({ value, total }) => {
-    const percentage = total > 0 ? (value / total) * 100 : 0;
-    const circumference = 2 * Math.PI * 45;
-    const offset = circumference - (percentage / 100) * circumference;
+// A card to highlight the very next upcoming dose.
+const UpcomingDoseCard = ({ reminder, onUpdateStatus }) => {
+    if (!reminder) {
+        return (
+            <div className="upcoming-dose-card empty">
+                <CheckCircle size={24} className="icon" />
+                <h4>All Done for Today!</h4>
+                <p>You've taken or skipped all your scheduled doses.</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="progress-chart-container">
-            <div className="progress-chart">
-                <svg width="100" height="100" viewBox="0 0 100 100">
-                    <circle className="progress-chart-bg" cx="50" cy="50" r="45" />
-                    <motion.circle
-                        className="progress-chart-fg"
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={offset}
-                        initial={{ strokeDashoffset: circumference }}
-                        animate={{ strokeDashoffset: offset }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                </svg>
-                <div className="progress-chart-text">{Math.round(percentage)}%</div>
+        <motion.div 
+            className="upcoming-dose-card"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+            <div className="header">
+                <Clock size={18} />
+                <h4>Next Dose</h4>
             </div>
-            <div className="progress-details">
-                <div className="stat"><span className="dot" style={{backgroundColor: 'var(--success-color)'}}></span> Taken: {value}</div>
-                <div className="stat"><span className="dot" style={{backgroundColor: 'var(--text-secondary)'}}></span> Pending: {total - value}</div>
+            <div className="content">
+                <span className="time">{reminder.reminder_time.slice(0, 5)}</span>
+                <span className="name">{reminder.medicine_name}</span>
             </div>
-        </div>
-    );
-};
+            <div className="actions">
+                <Button onClick={() => onUpdateStatus(reminder.id, 'taken')} size="sm">
+                    <Check size={16} /> Mark as Taken
+                </Button>
+                 <Button onClick={() => onUpdateStatus(reminder.id, 'skipped')} variant="secondary" size="sm">
+                    <X size={16} /> Skip
+                </Button>
+            </div>
+        </motion.div>
+    )
+}
 
-const TimelineCard = ({ reminder, onUpdateStatus, onDelete }) => {
+
+// A card representing a single reminder in the timeline.
+const TimelineCard = ({ reminder, onUpdateStatus, onDelete, onEdit }) => {
     const statusIcons = {
         scheduled: <Clock size={20} />,
         taken: <CheckCircle size={20} />,
         skipped: <XCircle size={20} />,
+    };
+
+    const getFrequencyText = () => {
+        switch (reminder.frequency) {
+            case 'weekly':
+                return <><CalendarDays size={14}/><span>{reminder.week_days.split(',').map(d => d.slice(0,3)).join(', ')}</span></>;
+            case 'interval':
+                return <><Hash size={14}/><span>Every {reminder.day_interval} days</span></>;
+            case 'daily':
+            default:
+                return <><Repeat size={14}/><span>Everyday</span></>;
+        }
     };
 
     return (
@@ -65,14 +85,18 @@ const TimelineCard = ({ reminder, onUpdateStatus, onDelete }) => {
                 <div className="medicine-name">{reminder.medicine_name}</div>
                 <div className="status-text">{reminder.status.charAt(0).toUpperCase() + reminder.status.slice(1)}</div>
             </div>
+            <div className="frequency">
+                {getFrequencyText()}
+            </div>
             <div className="actions">
+                <Button variant="icon" onClick={() => onEdit(reminder.id)}><Edit size={18} /></Button>
                 {reminder.status === 'scheduled' && (
                     <>
                         <Button variant="icon" onClick={() => onUpdateStatus(reminder.id, 'taken')}><Check size={20} /></Button>
                         <Button variant="icon" onClick={() => onUpdateStatus(reminder.id, 'skipped')}><X size={20} /></Button>
                     </>
                 )}
-                <Button variant="icon" className="delete" onClick={() => onDelete(reminder.id)}><Trash2 size={18} /></Button>
+                <Button variant="icon" className="delete" onClick={() => onDelete(reminder)}><Trash2 size={18} /></Button>
             </div>
         </motion.div>
     );
@@ -81,19 +105,18 @@ const TimelineCard = ({ reminder, onUpdateStatus, onDelete }) => {
 
 const RemindersPage = () => {
     const [reminders, setReminders] = useState([]);
-    const [medicines, setMedicines] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [remindersRes, medicinesRes] = await Promise.all([fetchReminders(), fetchMedicines()]);
+            const remindersRes = await fetchReminders();
             const sortedReminders = remindersRes.data.sort((a,b) => a.reminder_time.localeCompare(b.reminder_time));
             setReminders(sortedReminders);
-            setMedicines(medicinesRes.data);
         } catch (error) {
             console.error(error);
+            toast.error("Failed to load reminders.");
         } finally {
             setIsLoading(false);
         }
@@ -104,7 +127,7 @@ const RemindersPage = () => {
     }, [loadData]);
 
     const handleUpdateStatus = async (id, status) => {
-        const promise = updateReminderStatus(id, status);
+        const promise = updateReminder(id, { status });
         toast.promise(promise, {
             loading: 'Updating status...',
             success: 'Status updated!',
@@ -118,13 +141,14 @@ const RemindersPage = () => {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleConfirmDelete = async (id) => {
         const promise = deleteReminder(id);
         toast.promise(promise, {
             loading: 'Deleting reminder...',
             success: 'Reminder deleted!',
             error: 'Failed to delete reminder.',
         });
+        
         try {
             await promise;
             loadData();
@@ -132,10 +156,41 @@ const RemindersPage = () => {
             console.error(error);
         }
     };
+
+    // ✅ UPDATED: This now triggers a confirmation toast instead of a modal.
+    const handleDeleteRequest = (reminder) => {
+        toast((t) => (
+            <div className="delete-toast">
+                <h4>Delete Reminder?</h4>
+                <p>Are you sure you want to delete the reminder for <strong>{reminder.medicine_name}</strong>?</p>
+                <div className="toast-actions">
+                    <Button variant="secondary" size="sm" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => {
+                        handleConfirmDelete(reminder.id);
+                        toast.dismiss(t.id);
+                    }}>
+                        Delete
+                    </Button>
+                </div>
+            </div>
+        ), {
+            duration: 6000,
+            style: {
+                background: 'transparent',
+                boxShadow: 'none',
+                padding: 0,
+            }
+        });
+    };
     
-    const handleAddSuccess = () => {
-        setIsModalOpen(false);
-        loadData();
+    const handleAddClick = () => {
+        navigate('/reminders/add');
+    };
+
+    const handleEditClick = (id) => {
+        navigate(`/reminders/edit/${id}`);
     };
 
     const remindersByTime = useMemo(() => {
@@ -149,8 +204,12 @@ const RemindersPage = () => {
         }, {});
     }, [reminders]);
 
-    const totalReminders = reminders.length;
-    const takenReminders = reminders.filter(r => r.status === 'taken').length;
+    const nextUpcomingReminder = useMemo(() => {
+        return reminders
+            .filter(r => r.status === 'scheduled')
+            .sort((a, b) => a.reminder_time.localeCompare(b.reminder_time))[0];
+    }, [reminders]);
+
 
     if (isLoading) return <Loader />;
 
@@ -161,54 +220,55 @@ const RemindersPage = () => {
                     <h1>Your Daily Schedule</h1>
                     <p>A clear timeline of your medication for today. Stay on track and never miss a dose.</p>
                 </div>
-                <ProgressChart value={takenReminders} total={totalReminders} />
+                <UpcomingDoseCard reminder={nextUpcomingReminder} onUpdateStatus={handleUpdateStatus} />
             </div>
 
-            <div style={{ marginBottom: '2.5rem' }}>
-                <Button onClick={() => setIsModalOpen(true)}>
-                    <Plus size={20} />
-                    Add Reminder
-                </Button>
-            </div>
-
-            {totalReminders > 0 ? (
-                <div className="timeline-container">
-                    <div className="timeline-line"></div>
-                    <AnimatePresence>
-                        {Object.entries(remindersByTime).map(([time, timeGroup], index) => (
-                            <motion.div 
-                                key={time} 
-                                className="timeline-group"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: index * 0.1 }}
-                            >
-                                <div className="timeline-dot"></div>
-                                <div className="timeline-time">{time}</div>
-                                <div className="timeline-reminders">
-                                    {timeGroup.map(r => (
-                                        <TimelineCard key={r.id} reminder={r} onUpdateStatus={handleUpdateStatus} onDelete={handleDelete} />
-                                    ))}
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
-            ) : (
-                <div className="reminders-empty-state">
-                    <Bell size={48} className="icon"/>
-                    <h3>No Reminders Scheduled</h3>
-                    <p>It looks like you haven't set up any medication reminders yet. Get started by adding one.</p>
-                    <Button onClick={() => setIsModalOpen(true)}>
+            <div className="card">
+                <div className="card-header">
+                    <h3>Today's Timeline</h3>
+                    <Button onClick={handleAddClick}>
                         <Plus size={20} />
-                        Add Your First Reminder
+                        Add Reminder
                     </Button>
                 </div>
-            )}
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Reminder">
-                <ReminderForm medicines={medicines} onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
-            </Modal>
+                {reminders.length > 0 ? (
+                    <div className="timeline-container">
+                        <div className="timeline-line"></div>
+                        <AnimatePresence>
+                            {Object.entries(remindersByTime).map(([time, timeGroup], groupIndex) => (
+                                <motion.div 
+                                    key={time} 
+                                    className="timeline-group"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: groupIndex * 0.1 }}
+                                >
+                                    <div className="timeline-dot"></div>
+                                    <div className="timeline-time">{time}</div>
+                                    <div className="timeline-reminders">
+                                        {timeGroup.map(r => (
+                                            <TimelineCard 
+                                                key={r.id} 
+                                                reminder={r} 
+                                                onUpdateStatus={handleUpdateStatus} 
+                                                onDelete={handleDeleteRequest} 
+                                                onEdit={handleEditClick} 
+                                            />
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    <div className="reminders-empty-state">
+                        <Bell size={48} className="icon"/>
+                        <h3>No Reminders Scheduled</h3>
+                        <p>It looks like you haven't set up any medication reminders yet. Get started by adding one.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

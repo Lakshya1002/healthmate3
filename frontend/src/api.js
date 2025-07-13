@@ -54,5 +54,6 @@ export const deleteHealthLog = (id) => api.delete(`/health-logs/${id}`);
 // --- Reminders ---
 export const fetchReminders = () => api.get('/reminders');
 export const addReminder = (reminderData) => api.post('/reminders', reminderData);
-export const updateReminderStatus = (id, status) => api.put(`/reminders/${id}`, { status });
+// ✅ UPDATED: A single function to handle all reminder updates (status, time, medicine, etc.)
+export const updateReminder = (id, reminderData) => api.put(`/reminders/${id}`, reminderData);
 export const deleteReminder = (id) => api.delete(`/reminders/${id}`);

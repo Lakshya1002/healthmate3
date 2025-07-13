@@ -4,7 +4,7 @@ import express from 'express';
 import { 
     getReminders, 
     addReminder, 
-    updateReminderStatus,
+    updateReminder, // ✅ Use the new generic update function
     deleteReminder 
 } from '../controllers/reminderController.js';
 import protect from '../middleware/authMiddleware.js';
@@ -18,7 +18,7 @@ router.route('/')
     .post(addReminder);
 
 router.route('/:id')
-    .put(updateReminderStatus)
+    .put(updateReminder) // ✅ Point to the correct controller function
     .delete(deleteReminder);
 
 export default router;

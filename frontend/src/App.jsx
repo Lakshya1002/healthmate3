@@ -12,6 +12,8 @@ import LoginPage from './pages/loginPage';
 import SignupPage from './pages/signupPage';
 import HealthLogPage from './pages/healthLogPage';
 import RemindersPage from './pages/remindersPage';
+import AddReminderPage from './pages/AddReminderPage';
+import EditReminderPage from './pages/EditReminderPage'; // Import the new edit page
 import ProfilePage from './pages/ProfilePage';
 import ThemeToggle from './components/ui/ThemeToggle';
 
@@ -29,10 +31,10 @@ function App() {
   };
 
   const NavLink = ({ to, icon, children }) => (
-    <Link to={to} className={`nav-link ${location.pathname === to ? 'active' : ''}`}>
+    <Link to={to} className={`nav-link ${location.pathname.startsWith(to) && to !== '/' || location.pathname === to ? 'active' : ''}`}>
       {icon}
       <span className="nav-text">{children}</span>
-      {location.pathname === to && (
+      {location.pathname.startsWith(to) && to !== '/' || location.pathname === to && (
         <motion.div className="active-nav-indicator" layoutId="activeNav" />
       )}
     </Link>
@@ -85,6 +87,8 @@ function App() {
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/add" element={<ProtectedRoute><AddMedicinePage /></ProtectedRoute>} />
               <Route path="/reminders" element={<ProtectedRoute><RemindersPage /></ProtectedRoute>} />
+              <Route path="/reminders/add" element={<ProtectedRoute><AddReminderPage /></ProtectedRoute>} />
+              <Route path="/reminders/edit/:id" element={<ProtectedRoute><EditReminderPage /></ProtectedRoute>} />
               <Route path="/health-log" element={<ProtectedRoute><HealthLogPage /></ProtectedRoute>} />
               <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
               <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />

@@ -10,7 +10,8 @@ import db from '../config/db.js';
 export const getReminders = async (req, res) => {
     try {
         const [reminders] = await db.query(
-            `SELECT r.id, r.reminder_time, r.status, m.name as medicine_name 
+            // ✅ UPDATED: Select new frequency columns
+            `SELECT r.id, r.medicine_id, r.reminder_time, r.status, r.frequency, r.week_days, r.day_interval, m.name as medicine_name 
              FROM reminders r
              JOIN medicines m ON r.medicine_id = m.id
              WHERE r.user_id = ? 
@@ -30,17 +31,18 @@ export const getReminders = async (req, res) => {
  * @access  Private
  */
 export const addReminder = async (req, res) => {
-    const { medicine_id, reminder_time } = req.body;
+    // ✅ UPDATED: Destructure new frequency fields from body
+    const { medicine_id, reminder_time, frequency, week_days, day_interval } = req.body;
     const userId = req.user.id;
 
-    if (!medicine_id || !reminder_time) {
-        return res.status(400).json({ message: 'Please provide medicine and reminder time.' });
+    if (!medicine_id || !reminder_time || !frequency) {
+        return res.status(400).json({ message: 'Please provide medicine, time, and frequency.' });
     }
 
     try {
         const [result] = await db.query(
-            'INSERT INTO reminders (user_id, medicine_id, reminder_time) VALUES (?, ?, ?)',
-            [userId, medicine_id, reminder_time]
+            'INSERT INTO reminders (user_id, medicine_id, reminder_time, frequency, week_days, day_interval) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, medicine_id, reminder_time, frequency, week_days, day_interval]
         );
         const [newReminder] = await db.query('SELECT * FROM reminders WHERE id = ?', [result.insertId]);
         res.status(201).json(newReminder[0]);
@@ -51,24 +53,42 @@ export const addReminder = async (req, res) => {
 };
 
 /**
- * @desc    Update a reminder's status
+ * @desc    Update a reminder
  * @route   PUT /api/reminders/:id
  * @access  Private
  */
-export const updateReminderStatus = async (req, res) => {
+export const updateReminder = async (req, res) => {
     const reminderId = req.params.id;
-    const { status } = req.body;
     const userId = req.user.id;
+    // ✅ UPDATED: Destructure all possible fields
+    const { medicine_id, reminder_time, status, frequency, week_days, day_interval } = req.body;
 
-    if (!status || !['scheduled', 'taken', 'skipped'].includes(status)) {
-        return res.status(400).json({ message: 'Invalid status provided.' });
+    const fields = [];
+    const values = [];
+
+    // Build the query dynamically based on the fields provided
+    if (medicine_id) { fields.push('medicine_id = ?'); values.push(medicine_id); }
+    if (reminder_time) { fields.push('reminder_time = ?'); values.push(reminder_time); }
+    if (frequency) { fields.push('frequency = ?'); values.push(frequency); }
+    if (week_days !== undefined) { fields.push('week_days = ?'); values.push(week_days); }
+    if (day_interval !== undefined) { fields.push('day_interval = ?'); values.push(day_interval); }
+    if (status) {
+        if (!['scheduled', 'taken', 'skipped'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status provided.' });
+        }
+        fields.push('status = ?');
+        values.push(status);
     }
 
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update were provided.' });
+    }
+
+    const sql = `UPDATE reminders SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`;
+    values.push(reminderId, userId);
+
     try {
-        const [result] = await db.query(
-            'UPDATE reminders SET status = ? WHERE id = ? AND user_id = ?',
-            [status, reminderId, userId]
-        );
+        const [result] = await db.query(sql, values);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Reminder not found or unauthorized.' });
@@ -81,6 +101,7 @@ export const updateReminderStatus = async (req, res) => {
         res.status(500).json({ message: 'Server error while updating reminder.' });
     }
 };
+
 
 /**
  * @desc    Delete a reminder
