@@ -29,7 +29,7 @@
   margin: 0;
 }
 
-/* Upcoming Dose Card Styles */
+/* ✅ ADDED: Upcoming Dose Card Styles */
 .upcoming-dose-card {
     background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
     color: var(--text-on-primary);
@@ -168,7 +168,7 @@
 }
 
 .timeline-card {
-  display: grid;
+  display: grid; /* ✅ Use grid for better alignment */
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 1rem;
@@ -213,6 +213,7 @@
   margin-top: 0.25rem;
 }
 
+/* ✅ ADDED: Frequency display styles */
 .timeline-card .frequency {
     display: flex;
     align-items: center;
@@ -248,36 +249,13 @@
 .reminders-empty-state h3 { font-size: 1.5rem; color: var(--text-primary); margin-bottom: 0.5rem; }
 .reminders-empty-state p { color: var(--text-secondary); max-width: 45ch; margin: 0 auto 1.5rem auto; }
 
-/* ✅ UPDATED: Styles for the centered confirmation toast */
-.delete-confirmation-toast {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-}
-
-.delete-toast {
-    background-color: var(--card-background);
-    color: var(--text-primary);
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border: 1px solid var(--border-color);
-    width: 100%;
-    max-width: 400px;
+/* ✅ ADDED: Delete Modal Styles */
+.delete-modal-content {
     text-align: center;
 }
-
-.delete-toast-icon {
-    width: 48px;
-    height: 48px;
+.delete-modal-icon {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--danger-color);
@@ -286,22 +264,15 @@
     justify-content: center;
     margin-bottom: 1rem;
 }
-
-.delete-toast h4 {
+.delete-modal-content h4 {
     font-size: 1.25rem;
     font-weight: 700;
-    margin: 0 0 0.5rem 0;
+    margin-bottom: 0.5rem;
 }
-
-.delete-toast p {
-    font-size: 0.9rem;
+.delete-modal-content p {
     color: var(--text-secondary);
-    margin: 0 0 1.5rem 0;
-    line-height: 1.5;
+    margin-bottom: 2rem;
 }
-
-.toast-actions {
-    display: flex;
+.delete-modal-content .modal-actions {
     justify-content: center;
-    gap: 1rem;
 }
