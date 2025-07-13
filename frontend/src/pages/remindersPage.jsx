@@ -4,11 +4,12 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Bell, Check, X, Trash2, Plus, Clock, CheckCircle, XCircle, Edit, CalendarDays, Repeat, Hash } from 'lucide-react';
+import { Bell, Check, X, Trash2, Plus, Clock, CheckCircle, XCircle, Edit, AlertTriangle, CalendarDays, Repeat, Hash } from 'lucide-react';
 
 import { fetchReminders, updateReminder, deleteReminder } from '../api';
 import Loader from '../components/Loader';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import '../remindersPage.css';
 
 // A card to highlight the very next upcoming dose.
@@ -106,6 +107,7 @@ const TimelineCard = ({ reminder, onUpdateStatus, onDelete, onEdit }) => {
 const RemindersPage = () => {
     const [reminders, setReminders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [deletingReminder, setDeletingReminder] = useState(null);
     const navigate = useNavigate();
 
     const loadData = useCallback(async () => {
@@ -141,8 +143,14 @@ const RemindersPage = () => {
         }
     };
 
-    const handleConfirmDelete = async (id) => {
-        const promise = deleteReminder(id);
+    const handleDeleteRequest = (reminder) => {
+        setDeletingReminder(reminder);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingReminder) return;
+
+        const promise = deleteReminder(deletingReminder.id);
         toast.promise(promise, {
             loading: 'Deleting reminder...',
             success: 'Reminder deleted!',
@@ -151,38 +159,12 @@ const RemindersPage = () => {
         
         try {
             await promise;
+            setDeletingReminder(null);
             loadData();
         } catch (error) {
             console.error(error);
+            setDeletingReminder(null);
         }
-    };
-
-    // ✅ UPDATED: This now triggers a confirmation toast instead of a modal.
-    const handleDeleteRequest = (reminder) => {
-        toast((t) => (
-            <div className="delete-toast">
-                <h4>Delete Reminder?</h4>
-                <p>Are you sure you want to delete the reminder for <strong>{reminder.medicine_name}</strong>?</p>
-                <div className="toast-actions">
-                    <Button variant="secondary" size="sm" onClick={() => toast.dismiss(t.id)}>
-                        Cancel
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => {
-                        handleConfirmDelete(reminder.id);
-                        toast.dismiss(t.id);
-                    }}>
-                        Delete
-                    </Button>
-                </div>
-            </div>
-        ), {
-            duration: 6000,
-            style: {
-                background: 'transparent',
-                boxShadow: 'none',
-                padding: 0,
-            }
-        });
     };
     
     const handleAddClick = () => {
@@ -205,6 +187,8 @@ const RemindersPage = () => {
     }, [reminders]);
 
     const nextUpcomingReminder = useMemo(() => {
+        // ✅ FIXED: The logic now finds the first reminder that is still 'scheduled',
+        // regardless of whether its time has passed. This correctly handles missed doses.
         return reminders
             .filter(r => r.status === 'scheduled')
             .sort((a, b) => a.reminder_time.localeCompare(b.reminder_time))[0];
@@ -269,6 +253,26 @@ const RemindersPage = () => {
                     </div>
                 )}
             </div>
+
+            <Modal isOpen={!!deletingReminder} onClose={() => setDeletingReminder(null)} title="Confirm Deletion">
+                <div className="delete-modal-content">
+                    <div className="delete-modal-icon">
+                        <AlertTriangle size={32} />
+                    </div>
+                    <h4>Are you sure?</h4>
+                    <p>
+                        Do you really want to delete the reminder for <strong>{deletingReminder?.medicine_name}</strong> at <strong>{deletingReminder?.reminder_time.slice(0,5)}</strong>? This action cannot be undone.
+                    </p>
+                    <div className="modal-actions">
+                        <Button variant="secondary" onClick={() => setDeletingReminder(null)}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" onClick={handleConfirmDelete}>
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
