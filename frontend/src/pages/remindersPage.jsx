@@ -124,6 +124,10 @@ const RemindersPage = () => {
 
     useEffect(() => {
         loadData();
+        // Cleanup function to dismiss any active toasts when the component unmounts
+        return () => {
+            toast.dismiss();
+        };
     }, [loadData]);
 
     const handleUpdateStatus = async (id, status) => {
@@ -157,31 +161,69 @@ const RemindersPage = () => {
         }
     };
 
-    // ✅ UPDATED: This now triggers a confirmation toast instead of a modal.
     const handleDeleteRequest = (reminder) => {
-        toast((t) => (
-            <div className="delete-toast">
-                <h4>Delete Reminder?</h4>
-                <p>Are you sure you want to delete the reminder for <strong>{reminder.medicine_name}</strong>?</p>
-                <div className="toast-actions">
-                    <Button variant="secondary" size="sm" onClick={() => toast.dismiss(t.id)}>
-                        Cancel
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => {
-                        handleConfirmDelete(reminder.id);
-                        toast.dismiss(t.id);
-                    }}>
-                        Delete
-                    </Button>
-                </div>
-            </div>
-        ), {
-            duration: 6000,
-            style: {
-                background: 'transparent',
-                boxShadow: 'none',
-                padding: 0,
+        // Dismiss any existing toasts before showing a new one
+        toast.dismiss(); 
+
+        const getFrequencyText = () => {
+            if (!reminder) return '';
+            switch (reminder.frequency) {
+                case 'weekly':
+                    return `on ${reminder.week_days.split(',').join(', ')}`;
+                case 'interval':
+                    return `every ${reminder.day_interval} days`;
+                case 'daily':
+                default:
+                    return 'every day';
             }
+        };
+        
+        toast.custom((t) => (
+            <AnimatePresence>
+                {t.visible && (
+                    <motion.div
+                        className="delete-confirmation-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="delete-toast"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        >
+                            <div className="delete-toast-icon">
+                                <Trash2 size={28} />
+                            </div>
+                            <h4>Delete Reminder?</h4>
+                            <p>You are about to delete the following reminder. This action cannot be undone.</p>
+                            
+                            <div className="reminder-details-summary">
+                                <p><strong>Medicine:</strong> {reminder.medicine_name}</p>
+                                <p><strong>Time:</strong> {reminder.reminder_time.slice(0, 5)}</p>
+                                <p><strong>Frequency:</strong> {getFrequencyText()}</p>
+                            </div>
+
+                            <div className="toast-actions">
+                                <Button variant="secondary" onClick={() => toast.dismiss(t.id)}>
+                                    Cancel
+                                </Button>
+                                <Button variant="danger" onClick={() => {
+                                    handleConfirmDelete(reminder.id);
+                                    toast.dismiss(t.id);
+                                }}>
+                                    Yes, Delete
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        ), {
+            duration: Infinity, // This makes the toast stay until manually dismissed
+            id: `delete-confirmation-${reminder.id}` // Unique ID to prevent multiple toasts for the same item
         });
     };
     
