@@ -1,8 +1,9 @@
 // frontend/src/App.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pill, LayoutDashboard, PlusCircle, Info, Mail, HeartPulse, Bell, LogOut, User } from 'lucide-react';
+import { Pill, LayoutDashboard, PlusCircle, Info, Mail, HeartPulse, Bell, LogOut, User, BellRing } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 import Dashboard from './pages/Dashboard';
 import AddMedicinePage from './pages/AddMedicinePage';
@@ -13,21 +14,55 @@ import SignupPage from './pages/signupPage';
 import HealthLogPage from './pages/healthLogPage';
 import RemindersPage from './pages/remindersPage';
 import AddReminderPage from './pages/AddReminderPage';
-import EditReminderPage from './pages/EditReminderPage'; // Import the new edit page
+import EditReminderPage from './pages/EditReminderPage';
 import ProfilePage from './pages/ProfilePage';
 import ThemeToggle from './components/ui/ThemeToggle';
 
 import { useAuth } from './context/authContext';
+import { registerServiceWorker, subscribeUserToPush } from './utils/notificationUtils';
 import './App.css';
 
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  // ✅ IMPROVED: Wrapper function now handles all user feedback
+  const handleEnableAlertsClick = async () => {
+    setIsSubscribing(true);
+    const toastId = toast.loading("Requesting notification permission...");
+
+    try {
+      const result = await subscribeUserToPush();
+      
+      // Update toast based on the result from the utility function
+      if (result.status === 'success') {
+        toast.success("Successfully subscribed! You'll receive a welcome notification shortly.", { id: toastId, duration: 5000 });
+      } else if (result.status === 'already-subscribed') {
+        toast.success("You are already subscribed to notifications.", { id: toastId });
+      } else if (result.status === 'denied') {
+        toast.error("Permission denied. To enable notifications, please go to your browser settings.", { id: toastId });
+      } else {
+        // This handles any other unexpected errors
+        toast.error("Could not subscribe to notifications. Please try again.", { id: toastId });
+      }
+
+    } catch (error) {
+      console.error("Subscription process failed:", error);
+      toast.error("An unexpected error occurred during subscription.", { id: toastId });
+    } finally {
+      setIsSubscribing(false); // Re-enable the button
+    }
   };
 
   const NavLink = ({ to, icon, children }) => (
@@ -66,6 +101,15 @@ function App() {
             <NavLink to="/contact" icon={<Mail size={20} />}>Contact</NavLink>
             <NavLink to="/profile" icon={<User size={20} />}>Profile</NavLink>
             <ThemeToggle />
+            <button 
+              className="nav-link" 
+              onClick={handleEnableAlertsClick} 
+              disabled={isSubscribing}
+              title="Enable Notifications"
+            >
+                <BellRing size={20} />
+                <span className="nav-text">{isSubscribing ? 'Subscribing...' : 'Enable Alerts'}</span>
+            </button>
             <button className="logout-btn" onClick={handleLogout}><LogOut size={20}/> Logout</button>
           </nav>
         </header>

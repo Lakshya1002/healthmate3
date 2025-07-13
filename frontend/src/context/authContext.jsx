@@ -1,6 +1,6 @@
 // frontend/src/context/authContext.jsx
 
-import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
+import React, { useState, useEffect, createContext, useContext, useMemo, useCallback } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { setAuthToken, loginUser, registerUser, getMe, googleLogin as apiGoogleLogin } from '../api';
 import Loader from '../components/Loader';
@@ -39,6 +39,13 @@ const AuthProviderComponent = ({ children }) => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
+  // ✅ Memoize the logout function with useCallback
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setAuthToken(null);
+    setUser(null);
+  }, []);
+
   useEffect(() => {
     const verifyUser = async () => {
       const token = localStorage.getItem('token');
@@ -49,15 +56,29 @@ const AuthProviderComponent = ({ children }) => {
           setUser(data);
         } catch (error) {
           console.error("Auth token verification failed", error);
-          localStorage.removeItem('token');
-          setAuthToken(null);
+          logout(); // Use the consistent logout function
         }
       }
       setLoading(false);
     };
 
     verifyUser();
-  }, []);
+  }, [logout]);
+
+  // ✅ ADDED: This effect listens for the 'unauthorized' event from the API interceptor
+  useEffect(() => {
+    const handleUnauthorized = () => {
+        console.log("Unauthorized event caught from API. Logging out.");
+        logout();
+    };
+
+    window.addEventListener('unauthorized', handleUnauthorized);
+
+    // Cleanup the event listener when the component unmounts
+    return () => {
+        window.removeEventListener('unauthorized', handleUnauthorized);
+    };
+  }, [logout]);
 
   const login = async (credentials) => {
     const { data } = await loginUser(credentials);
@@ -79,12 +100,6 @@ const AuthProviderComponent = ({ children }) => {
     setAuthToken(data.token);
     setUser({ id: data.id, username: data.username, email: data.email });
   };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setAuthToken(null);
-    setUser(null);
-  };
   
   const value = useMemo(() => ({
     user,
@@ -97,7 +112,7 @@ const AuthProviderComponent = ({ children }) => {
     logout,
     theme,
     toggleTheme
-  }), [user, loading, theme]);
+  }), [user, loading, theme, logout]);
 
   if (loading) {
     return <Loader />;

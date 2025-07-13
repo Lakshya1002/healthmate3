@@ -4,23 +4,21 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../config/db.js';
 import Joi from 'joi';
-import { OAuth2Client } from 'google-auth-library'; // ✅ Import Google Auth Library
+import { OAuth2Client } from 'google-auth-library';
 
-// --- Google Auth Client ---
 const client = new OAuth2Client(process.env.OAUTH_CLIENT_ID);
 
-// --- Helper Function ---
+// Helper function to generate a JWT
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-      console.error('FATAL ERROR: JWT_SECRET is not defined.');
-      process.exit(1);
+      console.error('FATAL ERROR: JWT_SECRET is not defined in your .env file.');
+      process.exit(1); // Exit if the secret is missing
   }
   return jwt.sign({ id }, secret, {
     expiresIn: '30d',
   });
 };
-
 
 // --- Validation Schemas ---
 const registerSchema = Joi.object({
@@ -34,15 +32,11 @@ const loginSchema = Joi.object({
     password: Joi.string().required(),
 });
 
+
 // --- Controller Functions ---
 
-/**
- * @desc    Handle Google Sign-In
- * @route   POST /api/auth/google
- * @access  Public
- */
 export const googleLogin = async (req, res) => {
-    const { credential } = req.body; // This is the token from Google
+    const { credential } = req.body;
 
     try {
         const ticket = await client.verifyIdToken({
@@ -53,12 +47,10 @@ export const googleLogin = async (req, res) => {
         
         const { email, name } = payload;
 
-        // Check if user already exists
         const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
         
         let user = existingUsers[0];
 
-        // If user doesn't exist, create a new one
         if (!user) {
             const [result] = await db.query(
                 'INSERT INTO users (username, email) VALUES (?, ?)',
@@ -68,7 +60,6 @@ export const googleLogin = async (req, res) => {
             user = newUser[0];
         }
 
-        // Generate our own JWT for the user to use with our API
         const token = generateToken(user.id);
 
         res.status(200).json({
@@ -132,11 +123,15 @@ export const login = async (req, res) => {
     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     const user = users[0];
 
+    if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials.' });
+    }
+    
     if (!user.password) {
         return res.status(401).json({ message: 'This account was created with a social provider. Please use Google Sign-In.' });
     }
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (await bcrypt.compare(password, user.password)) {
       res.json({
         id: user.id,
         username: user.username,

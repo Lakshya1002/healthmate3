@@ -7,11 +7,24 @@ const api = axios.create({
   baseURL: '/api',
 });
 
+// Add a response interceptor to handle errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.message || error.message || 'An unknown error occurred';
-    toast.error(message);
+
+    // If the error is 401 (Unauthorized), dispatch a custom event.
+    // This event will be caught by our AuthContext to handle logging the user out.
+    // This is a clean way to communicate between the API layer and the React UI layer.
+    if (error.response && error.response.status === 401) {
+      // We only dispatch the event and don't show a toast here,
+      // as the logout process will handle the user redirection.
+      window.dispatchEvent(new Event('unauthorized'));
+    } else {
+      // For all other errors, we can show a generic error toast.
+      toast.error(message);
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -54,6 +67,9 @@ export const deleteHealthLog = (id) => api.delete(`/health-logs/${id}`);
 // --- Reminders ---
 export const fetchReminders = () => api.get('/reminders');
 export const addReminder = (reminderData) => api.post('/reminders', reminderData);
-// ✅ UPDATED: A single function to handle all reminder updates (status, time, medicine, etc.)
 export const updateReminder = (id, reminderData) => api.put(`/reminders/${id}`, reminderData);
 export const deleteReminder = (id) => api.delete(`/reminders/${id}`);
+
+// ✅ NEW: Push Notifications
+export const getVapidPublicKey = () => api.get('/notifications/vapid-public-key');
+export const subscribeToPush = (subscription) => api.post('/notifications/subscribe', subscription);
