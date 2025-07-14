@@ -39,7 +39,6 @@ const AuthProviderComponent = ({ children }) => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  // ✅ Memoize the logout function with useCallback
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     setAuthToken(null);
@@ -56,7 +55,7 @@ const AuthProviderComponent = ({ children }) => {
           setUser(data);
         } catch (error) {
           console.error("Auth token verification failed", error);
-          logout(); // Use the consistent logout function
+          logout();
         }
       }
       setLoading(false);
@@ -65,7 +64,6 @@ const AuthProviderComponent = ({ children }) => {
     verifyUser();
   }, [logout]);
 
-  // ✅ ADDED: This effect listens for the 'unauthorized' event from the API interceptor
   useEffect(() => {
     const handleUnauthorized = () => {
         console.log("Unauthorized event caught from API. Logging out.");
@@ -74,7 +72,6 @@ const AuthProviderComponent = ({ children }) => {
 
     window.addEventListener('unauthorized', handleUnauthorized);
 
-    // Cleanup the event listener when the component unmounts
     return () => {
         window.removeEventListener('unauthorized', handleUnauthorized);
     };
@@ -84,21 +81,28 @@ const AuthProviderComponent = ({ children }) => {
     const { data } = await loginUser(credentials);
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
-    setUser({ id: data.id, username: data.username, email: data.email });
+    // Fetch full user profile after login to get all data, including timezone
+    const { data: profileData } = await getMe();
+    setUser(profileData);
   };
 
   const signup = async (userData) => {
     const { data } = await registerUser(userData);
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
-    setUser({ id: data.id, username: data.username, email: data.email });
+    // Fetch full user profile after signup
+    const { data: profileData } = await getMe();
+    setUser(profileData);
   };
   
-  const googleLogin = async (googleCredential) => {
-    const { data } = await apiGoogleLogin({ credential: googleCredential });
+  // ✅ UPDATED: The googleLogin function now accepts the timezone.
+  const googleLogin = async (googleCredential, timezone) => {
+    const { data } = await apiGoogleLogin({ credential: googleCredential, timezone });
     localStorage.setItem('token', data.token);
     setAuthToken(data.token);
-    setUser({ id: data.id, username: data.username, email: data.email });
+    // Fetch full user profile after login
+    const { data: profileData } = await getMe();
+    setUser(profileData);
   };
   
   const value = useMemo(() => ({

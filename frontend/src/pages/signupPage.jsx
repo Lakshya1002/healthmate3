@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/authContext';
-import { Pill, Mail, Key, User, Eye, EyeOff } from 'lucide-react'; // ✅ Import Eye and EyeOff icons
+import { Pill, Mail, Key, User, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
@@ -30,18 +30,21 @@ const SignupPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // ✅ State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup, googleLogin: authGoogleLogin } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ UPDATED: The handleSubmit function now includes the user's timezone.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await signup({ username, email, password });
+      // Automatically detect the browser's timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      await signup({ username, email, password, timezone });
       navigate('/');
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to sign up. Please try again.';
@@ -51,10 +54,12 @@ const SignupPage = () => {
     }
   };
 
+  // ✅ UPDATED: The Google login handler now also sends the timezone.
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
     try {
-      await authGoogleLogin(credentialResponse.credential);
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      await authGoogleLogin(credentialResponse.credential, timezone);
       navigate('/');
     } catch (err) {
       setError('Google Sign-Up failed. Please try again.');
@@ -125,13 +130,12 @@ const SignupPage = () => {
                 <Key size={18} />
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'} // ✅ Toggle input type
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Minimum 6 characters"
                 />
-                 {/* ✅ Add toggle button */}
                 <button 
                   type="button" 
                   onClick={() => setShowPassword(!showPassword)} 

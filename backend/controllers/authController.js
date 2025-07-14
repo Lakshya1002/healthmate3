@@ -21,10 +21,12 @@ const generateToken = (id) => {
 };
 
 // --- Validation Schemas ---
+// ✅ ADDED: timezone to the register schema
 const registerSchema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
+    timezone: Joi.string().required(),
 });
 
 const loginSchema = Joi.object({
@@ -34,9 +36,9 @@ const loginSchema = Joi.object({
 
 
 // --- Controller Functions ---
-
+// ✅ UPDATED: Now accepts and handles timezone from the frontend
 export const googleLogin = async (req, res) => {
-    const { credential } = req.body;
+    const { credential, timezone } = req.body;
 
     try {
         const ticket = await client.verifyIdToken({
@@ -52,13 +54,18 @@ export const googleLogin = async (req, res) => {
         let user = existingUsers[0];
 
         if (!user) {
+            // If user is new, save them with their timezone
             const [result] = await db.query(
-                'INSERT INTO users (username, email) VALUES (?, ?)',
-                [name, email]
+                'INSERT INTO users (username, email, timezone) VALUES (?, ?, ?)',
+                [name, email, timezone]
             );
             const [newUser] = await db.query('SELECT * FROM users WHERE id = ?', [result.insertId]);
             user = newUser[0];
+        } else if (!user.timezone && timezone) {
+            // If an existing user doesn't have a timezone set, update it
+            await db.query('UPDATE users SET timezone = ? WHERE id = ?', [timezone, user.id]);
         }
+
 
         const token = generateToken(user.id);
 
@@ -75,14 +82,14 @@ export const googleLogin = async (req, res) => {
     }
 };
 
-
+// ✅ UPDATED: Now accepts and saves the user's timezone on registration
 export const register = async (req, res) => {
     const { error } = registerSchema.validate(req.body);
     if (error) {
         return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email, password, timezone } = req.body;
 
   try {
     const [existingUsers] = await db.query('SELECT email FROM users WHERE email = ?', [email]);
@@ -94,8 +101,8 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const [result] = await db.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email, hashedPassword]
+      'INSERT INTO users (username, email, password, timezone) VALUES (?, ?, ?, ?)',
+      [username, email, hashedPassword, timezone]
     );
 
     res.status(201).json({
@@ -147,9 +154,10 @@ export const login = async (req, res) => {
   }
 };
 
+// ✅ UPDATED: Now returns the timezone along with other user data
 export const getMe = async (req, res) => {
     try {
-        const [users] = await db.query('SELECT id, username, email, created_at FROM users WHERE id = ?', [req.user.id]);
+        const [users] = await db.query('SELECT id, username, email, timezone, created_at FROM users WHERE id = ?', [req.user.id]);
         const user = users[0];
 
         if (user) {

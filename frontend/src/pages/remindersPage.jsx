@@ -124,10 +124,10 @@ const RemindersPage = () => {
 
     useEffect(() => {
         loadData();
-        // Cleanup function to dismiss any active toasts when the component unmounts
-        return () => {
-            toast.dismiss();
-        };
+        // ✅ FIXED: Removed the aggressive toast dismissal from the cleanup function.
+        // This prevents the component from interfering with global toasts from the header.
+        // The only toast that needs manual dismissal is the delete confirmation,
+        // which is handled separately.
     }, [loadData]);
 
     const handleUpdateStatus = async (id, status) => {
@@ -162,7 +162,7 @@ const RemindersPage = () => {
     };
 
     const handleDeleteRequest = (reminder) => {
-        // Dismiss any existing toasts before showing a new one
+        // Dismiss any other toasts before showing the confirmation.
         toast.dismiss(); 
 
         const getFrequencyText = () => {
@@ -182,7 +182,7 @@ const RemindersPage = () => {
             <AnimatePresence>
                 {t.visible && (
                     <motion.div
-                        className="delete-confirmation-overlay"
+                        className="delete-confirmation-toast"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -222,8 +222,8 @@ const RemindersPage = () => {
                 )}
             </AnimatePresence>
         ), {
-            duration: Infinity, // This makes the toast stay until manually dismissed
-            id: `delete-confirmation-${reminder.id}` // Unique ID to prevent multiple toasts for the same item
+            duration: Infinity, 
+            id: `delete-confirmation-${reminder.id}`
         });
     };
     
