@@ -26,26 +26,36 @@ function urlBase64ToUint8Array(base64String) {
  */
 export async function subscribeUserToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.error('Push notifications are not supported by this browser.');
     return { status: 'unsupported' };
   }
 
   try {
+    // ✅ FIXED: Use navigator.serviceWorker.ready to ensure the service worker is active.
+    // This promise resolves only when the service worker is installed and activated,
+    // which is the key to preventing race conditions.
     const swRegistration = await navigator.serviceWorker.ready;
+    console.log('Service Worker is active and ready.');
+
     let subscription = await swRegistration.pushManager.getSubscription();
 
     if (subscription) {
+      console.log('User is already subscribed.');
       return { status: 'already-subscribed' };
     }
 
     const { data } = await getVapidPublicKey();
+    if (!data || !data.publicKey) {
+      console.error('VAPID public key not received from server.');
+      throw new Error('Server is not configured for push notifications.');
+    }
     const applicationServerKey = urlBase64ToUint8Array(data.publicKey);
 
-    // This is the point where the browser asks for permission.
-    // The promise will not resolve until the user clicks "Allow" or "Block".
     subscription = await swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey,
     });
+    console.log('User subscribed successfully:', subscription);
 
     await subscribeToPush(subscription);
     return { status: 'success' };

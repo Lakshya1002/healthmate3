@@ -6,7 +6,7 @@ import cors from 'cors';
 import webpush from 'web-push';
 
 import pool from './config/db.js';
-import { startScheduler } from './utils/scheduler.js'; // ✅ Import the scheduler
+import { startScheduler } from './utils/scheduler.js';
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
@@ -19,17 +19,24 @@ import notificationRoutes from './routes/notificationRoutes.js';
 // Load environment variables
 dotenv.config();
 
-// Configure web-push
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails(
-        'mailto:your-email@example.com', // Replace with your email
-        process.env.VAPID_PUBLIC_KEY,
-        process.env.VAPID_PRIVATE_KEY
+// ✅ FIXED: Add a strict check for VAPID keys on startup.
+// The server will now refuse to start if the keys are missing from your .env file,
+// preventing it from running in a broken state.
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.error(
+        'FATAL ERROR: VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY are not defined in your .env file. ' +
+        'Please generate them using `npx web-push generate-vapid-keys` and add them to your .env file.'
     );
-    console.log('VAPID keys configured for web-push.');
-} else {
-    console.warn('VAPID keys not configured. Push notifications will be disabled.');
+    process.exit(1); // Exit the process with an error code
 }
+
+// Configure web-push with the now-guaranteed keys
+webpush.setVapidDetails(
+    `mailto:${process.env.VAPID_EMAIL || 'admin@example.com'}`, // Use an email from .env or a default
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+);
+console.log('VAPID keys configured successfully for web-push.');
 
 
 const app = express();
@@ -56,6 +63,6 @@ app.get('/', (req, res) => {
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    // ✅ Start the reminder scheduler when the server starts
+    // Start the reminder scheduler when the server starts
     startScheduler();
 });

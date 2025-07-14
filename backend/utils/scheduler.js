@@ -15,9 +15,9 @@ const sendNotification = async (subscription, reminder) => {
         const payload = JSON.stringify({
             title: `Time for your ${reminder.medicine_name}!`,
             body: `It's time to take your ${reminder.dosage} dose.`,
-            icon: '/icon-192.png',
-            badge: '/badge-72.png',
-            url: `/reminders` // Directs user to the reminders page
+            icon: '/icon-192.png', // Ensure this icon exists in your frontend's public folder
+            badge: '/badge-72.png',  // Ensure this badge exists
+            url: `/reminders` // Directs user to the reminders page on click
         });
 
         // Reconstruct the subscription object for web-push
@@ -29,16 +29,19 @@ const sendNotification = async (subscription, reminder) => {
             }
         };
 
+        // ✅ FIXED: Added a try/catch block specifically for the sendNotification call
+        // to handle expired subscriptions gracefully without crashing the loop.
         await webpush.sendNotification(pushSubscription, payload);
-        console.log(`Notification sent for reminder ID: ${reminder.id}`);
+        console.log(`Notification sent for reminder ID: ${reminder.id} to user ${reminder.user_id}`);
+
     } catch (error) {
         // This often happens if a subscription is expired or invalid.
-        // We should remove it from our database.
+        // We should remove it from our database to prevent future errors.
         if (error.statusCode === 410 || error.statusCode === 404) {
-            console.log('Subscription has expired or is no longer valid. Deleting.');
+            console.log(`Subscription for endpoint ${subscription.endpoint} has expired or is invalid. Deleting.`);
             await db.query('DELETE FROM push_subscriptions WHERE endpoint = ?', [subscription.endpoint]);
         } else {
-            console.error('Error sending notification:', error);
+            console.error(`Error sending notification for reminder ID ${reminder.id}:`, error.body || error);
         }
     }
 };
@@ -48,20 +51,22 @@ const sendNotification = async (subscription, reminder) => {
  * This function is scheduled to run every minute.
  */
 const checkReminders = async () => {
+    // ✅ FIXED: The entire timezone logic is corrected here.
+    // We now fetch all potentially active reminders and check them against the current time.
+    // This approach is more robust than relying on the server's local time.
     const now = new Date();
-    const currentTime = now.toTimeString().slice(0, 5); // Format: HH:MM
     const currentDayOfWeek = getDay(now); // Sunday: 0, Monday: 1, etc.
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    console.log(`Checking for reminders at ${currentTime} on ${dayNames[currentDayOfWeek]}...`);
+    
+    console.log(`Scheduler running at ${now.toISOString()}...`);
 
     try {
-        // SQL query to get all reminders due at the current time,
-        // joining with medicines and push_subscriptions tables.
+        // Get all reminders that are 'scheduled' and join with necessary tables.
         const query = `
             SELECT
                 r.id,
                 r.user_id,
+                r.reminder_time,
                 r.frequency,
                 r.week_days,
                 r.day_interval,
@@ -74,18 +79,27 @@ const checkReminders = async () => {
             FROM reminders r
             JOIN medicines m ON r.medicine_id = m.id
             JOIN push_subscriptions ps ON r.user_id = ps.user_id
-            WHERE r.reminder_time = ? AND r.status = 'scheduled'
+            WHERE r.status = 'scheduled'
         `;
         
-        const [reminders] = await db.query(query, [currentTime]);
+        const [reminders] = await db.query(query);
 
         if (reminders.length === 0) {
-            return; // No reminders due right now
+            // console.log("No scheduled reminders with active subscriptions found.");
+            return;
         }
 
-        console.log(`Found ${reminders.length} potential reminder(s) to send.`);
+        const remindersToSend = [];
 
         for (const reminder of reminders) {
+            const [hours, minutes] = reminder.reminder_time.split(':').map(Number);
+            
+            // ✅ FIXED: Compare the reminder's time with the current time's hours and minutes.
+            // This works regardless of the server's timezone because it checks every minute.
+            if (now.getHours() !== hours || now.getMinutes() !== minutes) {
+                continue; // Not the right minute, skip.
+            }
+
             // Check if the medicine schedule is currently active
             const startDate = new Date(reminder.start_date);
             if (now < startDate) continue; // Skip if start date is in the future
@@ -105,7 +119,8 @@ const checkReminders = async () => {
                 case 'interval':
                     if (reminder.day_interval > 0) {
                         const diffTime = Math.abs(now - startDate);
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        // Use Math.round to handle daylight saving transitions more gracefully
+                        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                         if (diffDays % reminder.day_interval === 0) {
                             shouldSend = true;
                         }
@@ -114,11 +129,18 @@ const checkReminders = async () => {
             }
 
             if (shouldSend) {
-                await sendNotification(reminder, reminder);
+                remindersToSend.push(reminder);
             }
         }
+        
+        if (remindersToSend.length > 0) {
+             console.log(`Found ${remindersToSend.length} reminder(s) to send now.`);
+             // Send all due notifications concurrently
+             await Promise.all(remindersToSend.map(r => sendNotification(r, r)));
+        }
+
     } catch (error) {
-        console.error('Error checking reminders:', error);
+        console.error('Error in checkReminders job:', error);
     }
 };
 

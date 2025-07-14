@@ -2,41 +2,105 @@
 
 /**
  * This is the service worker file. It runs in the background, separate from the web page,
- * and is responsible for handling push notifications.
+ * and is responsible for handling push notifications and other PWA features.
  */
+
+// ✅ ADDED: A unique cache name to manage caching. The version number helps in clearing old caches.
+const CACHE_NAME = 'healthmate-cache-v1';
+const URLS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/icon-192.png',
+  '/badge-72.png'
+];
+
+// ✅ ADDED: The 'install' event listener.
+// This runs when the service worker is first installed. It pre-caches key assets for offline use.
+self.addEventListener('install', event => {
+  console.log('Service Worker: Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Service Worker: Caching app shell');
+        return cache.addAll(URLS_TO_CACHE);
+      })
+  );
+});
+
+// ✅ ADDED: The 'activate' event listener.
+// This is a crucial step. It cleans up old caches and ensures the new service worker
+// takes control of the page immediately.
+self.addEventListener('activate', event => {
+  console.log('Service Worker: Activating...');
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Service Worker: Deleting old cache', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      // This command tells the service worker to take control of all open clients (tabs) immediately.
+      // This is the key to solving the cross-browser issue.
+      return self.clients.claim();
+    })
+  );
+});
+
 
 // Listen for a 'push' event from the server
 self.addEventListener('push', event => {
-  // The server sends data as a JSON string, so we parse it
+  if (!event.data) {
+    console.error('Push event but no data');
+    return;
+  }
+  
   const data = event.data.json();
-
-  // Prepare the options for the notification
+  const title = data.title || 'HealthMate Reminder';
+  
   const options = {
-    body: data.body,
-    // Use the icon from the server, or a high-quality placeholder if not provided
-    icon: data.icon || 'https://placehold.co/192x192/4f46e5/ffffff?text=HM',
-    // Use the badge from the server, or a placeholder if not provided
-    badge: data.badge || 'https://placehold.co/72x72/ffffff/4f46e5?text=H',
-    vibrate: [200, 100, 200], // Vibration pattern
+    body: data.body || 'You have a new notification.',
+    icon: self.registration.scope + 'icon-192.png',
+    badge: self.registration.scope + 'badge-72.png',
+    vibrate: [200, 100, 200, 100, 200],
     data: {
-      url: data.url || '/', // The URL to open when the notification is clicked
+      url: data.url || '/', 
     },
+    requireInteraction: true,
+    actions: [
+        { action: 'explore', title: 'View Reminder' }
+    ]
   };
 
-  // Tell the browser to show the notification.
-  // The 'waitUntil' ensures the service worker doesn't terminate before the notification is shown.
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(title, options)
   );
 });
 
 // Listen for a click on the notification
 self.addEventListener('notificationclick', event => {
-  // Close the notification pop-up
   event.notification.close();
+  const urlToOpen = new URL(event.notification.data.url, self.location.origin).href;
 
-  // Open the app or a specific URL when the notification is clicked
   event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(clientList => {
+      if (clientList.length > 0) {
+        let client = clientList[0];
+        for (let i = 0; i < clientList.length; i++) {
+          if (clientList[i].focused) {
+            client = clientList[i];
+          }
+        }
+        return client.focus();
+      }
+      return clients.openWindow(urlToOpen);
+    })
   );
 });
