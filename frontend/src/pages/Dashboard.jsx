@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
-import { fetchMedicines, fetchMedicineStats } from '../api';
+import { fetchMedicines, fetchMedicineStats, refillMedicine } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 import Loader from '../components/Loader';
 import EditModal from '../components/EditModal';
@@ -13,6 +14,8 @@ import AiInfoModal from '../components/AiInfoModal';
 import MedicineList from '../components/MedicineList';
 import StatCard from '../components/StatCard';
 import Button from '../components/ui/Button';
+import ActionItemsCard from '../components/ActionItemsCard';
+import RefillModal from '../components/RefillModal';
 
 import { Pill, Check, Clock, Search, List, LayoutGrid, Plus } from 'lucide-react';
 
@@ -31,6 +34,7 @@ const Dashboard = () => {
     const [editingMedicine, setEditingMedicine] = useState(null);
     const [deletingMedicine, setDeletingMedicine] = useState(null);
     const [infoMedicine, setInfoMedicine] = useState(null);
+    const [refillingMedicine, setRefillingMedicine] = useState(null);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -52,11 +56,14 @@ const Dashboard = () => {
         fetchData();
     }, [fetchData]);
 
+    const lowStockItems = useMemo(() => {
+        return medicines.filter(med => med.quantity != null && med.refill_threshold != null && med.quantity <= med.refill_threshold);
+    }, [medicines]);
+
     const filteredMedicines = useMemo(() => {
         if (activeTab === 'all') {
              return medicines.filter(med => med.name.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         return medicines
@@ -64,12 +71,27 @@ const Dashboard = () => {
                 if (activeTab === 'active') {
                     return !med.end_date || new Date(med.end_date) >= now;
                 }
-                return med.end_date && new Date(med.end_date) < now; // 'past'
+                return med.end_date && new Date(med.end_date) < now;
             })
             .filter(med =>
                 med.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
     }, [medicines, activeTab, searchQuery]);
+
+    const handleRefillConfirm = async (id, quantity) => {
+        const promise = refillMedicine(id, quantity);
+        toast.promise(promise, {
+            loading: 'Refilling medicine...',
+            success: 'Medicine has been marked as refilled!',
+            error: 'Failed to refill medicine.',
+        });
+        try {
+            await promise;
+            fetchData();
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const handleEdit = (medicine) => setEditingMedicine(medicine);
     const handleDeleteRequest = (medicine) => setDeletingMedicine(medicine);
@@ -79,6 +101,7 @@ const Dashboard = () => {
         setEditingMedicine(null);
         setDeletingMedicine(null);
         setInfoMedicine(null);
+        setRefillingMedicine(null);
     };
     
     const handleActionSuccess = () => {
@@ -102,6 +125,10 @@ const Dashboard = () => {
                     Add Medicine
                 </Button>
             </div>
+
+            <AnimatePresence>
+                <ActionItemsCard lowStockItems={lowStockItems} onRefill={(med) => setRefillingMedicine(med)} />
+            </AnimatePresence>
             
             <div className="stat-cards-container">
                 <StatCard icon={<Pill size={28} />} value={stats.activeMedicines || 0} label="Active" onClick={() => setActiveTab('active')} isActive={activeTab === 'active'} />
@@ -136,6 +163,14 @@ const Dashboard = () => {
                 {editingMedicine && <EditModal isOpen={!!editingMedicine} onClose={closeModal} medicine={editingMedicine} onSuccess={handleActionSuccess} />}
                 {deletingMedicine && <DeleteConfirmModal isOpen={!!deletingMedicine} onClose={closeModal} medicine={deletingMedicine} onSuccess={handleActionSuccess} />}
                 {infoMedicine && <AiInfoModal medicineName={infoMedicine.name} onClose={closeModal} />}
+                {refillingMedicine && (
+                    <RefillModal 
+                        isOpen={!!refillingMedicine} 
+                        onClose={closeModal} 
+                        medicine={refillingMedicine} 
+                        onConfirm={handleRefillConfirm}
+                    />
+                )}
             </AnimatePresence>
         </div>
     );

@@ -7,7 +7,8 @@ import {
     updateMedicine, 
     deleteMedicine,
     getMedicineStats,
-    getMedicineSuggestions // ✅ Import the new function
+    getMedicineSuggestions,
+    refillMedicine // ✅ ADDED: Import the new refill function
 } from '../controllers/medicineController.js';
 import protect from '../middleware/authMiddleware.js';
 
@@ -19,7 +20,6 @@ router.use(protect);
 router.route('/stats')
     .get(getMedicineStats);
 
-// ✅ ADDED: Route for getting suggestions
 router.route('/suggestions')
     .get(getMedicineSuggestions);
 
@@ -30,5 +30,9 @@ router.route('/')
 router.route('/:id')
     .put(updateMedicine)
     .delete(deleteMedicine);
+
+// ✅ ADDED: New route to handle refilling a medicine
+router.route('/:id/refill')
+    .put(refillMedicine);
 
 export default router;

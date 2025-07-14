@@ -2,6 +2,8 @@
 
 import db from '../config/db.js';
 
+// ... (existing functions like getAllMedicines, addMedicine, etc. remain here)
+
 /**
  * @desc    Get all medicines for the logged-in user
  * @route   GET /api/medicines
@@ -26,7 +28,7 @@ export const getAllMedicines = async (req, res) => {
  * @access  Private
  */
 export const addMedicine = async (req, res) => {
-  const { name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold } = req.body;
+  const { name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold, method } = req.body;
   const userId = req.user.id;
 
   if (!name || !dosage || !frequency || !start_date) {
@@ -35,8 +37,8 @@ export const addMedicine = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      'INSERT INTO medicines (user_id, name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [userId, name, dosage, frequency, start_date, end_date || null, notes || null, quantity || null, refill_threshold || null]
+      'INSERT INTO medicines (user_id, name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold, method) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [userId, name, dosage, frequency, start_date, end_date || null, notes || null, quantity || null, refill_threshold || null, method || 'pill']
     );
     const [newMedicine] = await db.query('SELECT * FROM medicines WHERE id = ?', [result.insertId]);
     res.status(201).json(newMedicine[0]);
@@ -54,7 +56,7 @@ export const addMedicine = async (req, res) => {
 export const updateMedicine = async (req, res) => {
   const medicineId = req.params.id;
   const userId = req.user.id;
-  const { name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold } = req.body;
+  const { name, dosage, frequency, start_date, end_date, notes, quantity, refill_threshold, method } = req.body;
 
   if (!name || !dosage || !frequency || !start_date) {
     return res.status(400).json({ message: 'Please provide name, dosage, frequency, and start date.' });
@@ -67,8 +69,8 @@ export const updateMedicine = async (req, res) => {
     }
 
     await db.query(
-      'UPDATE medicines SET name = ?, dosage = ?, frequency = ?, start_date = ?, end_date = ?, notes = ?, quantity = ?, refill_threshold = ? WHERE id = ?',
-      [name, dosage, frequency, start_date, end_date || null, notes || null, quantity || null, refill_threshold || null, medicineId]
+      'UPDATE medicines SET name = ?, dosage = ?, frequency = ?, start_date = ?, end_date = ?, notes = ?, quantity = ?, refill_threshold = ?, method = ? WHERE id = ?',
+      [name, dosage, frequency, start_date, end_date || null, notes || null, quantity || null, refill_threshold || null, method || 'pill', medicineId]
     );
     
     const [updatedMedicine] = await db.query('SELECT * FROM medicines WHERE id = ?', [medicineId]);
@@ -162,4 +164,40 @@ export const getMedicineSuggestions = async (req, res) => {
     console.error('Get Medicine Suggestions Error:', error);
     res.status(500).json({ message: 'Server error while fetching suggestions.' });
   }
+};
+
+
+/**
+ * ✅ UPDATED: Refill a medicine's quantity with a user-provided value.
+ * @desc    Update a medicine's quantity to a new value.
+ * @route   PUT /api/medicines/:id/refill
+ * @access  Private
+ */
+export const refillMedicine = async (req, res) => {
+    const medicineId = req.params.id;
+    const userId = req.user.id;
+    // ✅ CHANGED: Get the new quantity from the request body.
+    const { newQuantity } = req.body;
+
+    if (!newQuantity || isNaN(newQuantity) || newQuantity < 0) {
+        return res.status(400).json({ message: 'Please provide a valid new quantity.' });
+    }
+
+    try {
+        const [result] = await db.query(
+            'UPDATE medicines SET quantity = ? WHERE id = ? AND user_id = ?',
+            [newQuantity, medicineId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Medicine not found or unauthorized.' });
+        }
+
+        const [refilledMedicine] = await db.query('SELECT * FROM medicines WHERE id = ?', [medicineId]);
+        res.status(200).json(refilledMedicine[0]);
+
+    } catch (error) {
+        console.error('Refill Medicine Error:', error);
+        res.status(500).json({ message: 'Server error while refilling medicine.' });
+    }
 };

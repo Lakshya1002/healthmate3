@@ -21,6 +21,7 @@ const MedicineGridItem = ({ med, index, onEdit, onDelete, onGetInfo }) => {
         exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
     };
 
+    // ✅ ADDED: Logic to check if the medicine stock is low.
     const isLowStock = med.quantity != null && med.refill_threshold != null && med.quantity <= med.refill_threshold;
     const { icon, color } = methodIcons[med.method] || { icon: <Pill />, color: '#64748b' };
 
@@ -32,6 +33,7 @@ const MedicineGridItem = ({ med, index, onEdit, onDelete, onGetInfo }) => {
             animate="visible"
             exit="exit"
             layout
+            // ✅ ADDED: Conditional class for styling the low-stock state.
             className={`medicine-grid-item-redesigned ${isLowStock ? 'low-stock' : ''}`}
         >
             <div className="grid-item-header">
@@ -53,8 +55,9 @@ const MedicineGridItem = ({ med, index, onEdit, onDelete, onGetInfo }) => {
                     <span>{med.start_date?.slice(0, 10) || 'N/A'} to {med.end_date?.slice(0, 10) || 'Ongoing'}</span>
                 </div>
                  {med.quantity != null && (
+                    // ✅ ADDED: Conditional warning class and icon for low stock.
                     <div className={`detail-item ${isLowStock ? 'warning' : ''}`}>
-                        <Package size={14} />
+                        {isLowStock ? <AlertTriangle size={14} /> : <Package size={14} />}
                         <span>{med.quantity} left</span>
                     </div>
                 )}
