@@ -16,6 +16,8 @@ import RemindersPage from './pages/remindersPage';
 import AddReminderPage from './pages/AddReminderPage';
 import EditReminderPage from './pages/EditReminderPage';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage'; // ✅ IMPORT
+import ResetPasswordPage from './pages/ResetPasswordPage';   // ✅ IMPORT
 import ThemeToggle from './components/ui/ThemeToggle';
 
 import { useAuth } from './context/authContext';
@@ -37,31 +39,25 @@ function App() {
     navigate('/login');
   };
 
-  // ✅ IMPROVED: Wrapper function now handles all user feedback
   const handleEnableAlertsClick = async () => {
     setIsSubscribing(true);
     const toastId = toast.loading("Requesting notification permission...");
-
     try {
       const result = await subscribeUserToPush();
-      
-      // Update toast based on the result from the utility function
       if (result.status === 'success') {
         toast.success("Successfully subscribed! You'll receive a welcome notification shortly.", { id: toastId, duration: 5000 });
       } else if (result.status === 'already-subscribed') {
-        toast.success("You are already subscribed to notifications.", { id: toastId });
+        toast.success("You are already subscribed to notifications.", { id: toastId, duration: 4000 });
       } else if (result.status === 'denied') {
-        toast.error("Permission denied. To enable notifications, please go to your browser settings.", { id: toastId });
+        toast.error("Permission denied. To enable notifications, please go to your browser settings.", { id: toastId, duration: 5000 });
       } else {
-        // This handles any other unexpected errors
-        toast.error("Could not subscribe to notifications. Please try again.", { id: toastId });
+        toast.error("Could not subscribe to notifications. Please try again.", { id: toastId, duration: 4000 });
       }
-
     } catch (error) {
       console.error("Subscription process failed:", error);
-      toast.error("An unexpected error occurred during subscription.", { id: toastId });
+      toast.error("An unexpected error occurred during subscription.", { id: toastId, duration: 4000 });
     } finally {
-      setIsSubscribing(false); // Re-enable the button
+      setIsSubscribing(false);
     }
   };
 
@@ -69,9 +65,9 @@ function App() {
     <Link to={to} className={`nav-link ${location.pathname.startsWith(to) && to !== '/' || location.pathname === to ? 'active' : ''}`}>
       {icon}
       <span className="nav-text">{children}</span>
-      {location.pathname.startsWith(to) && to !== '/' || location.pathname === to && (
+      {location.pathname.startsWith(to) && to !== '/' || location.pathname === to ? (
         <motion.div className="active-nav-indicator" layoutId="activeNav" />
-      )}
+      ) : null}
     </Link>
   );
 
@@ -82,7 +78,8 @@ function App() {
     return children;
   };
   
-  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+  // ✅ UPDATED: Include the new password reset paths
+  const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password'].some(path => location.pathname.startsWith(path));
 
   return (
     <div className="app-layout">
@@ -127,6 +124,9 @@ function App() {
             <Routes location={location} key={location.pathname}>
               <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
               <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <SignupPage />} />
+              {/* ✅ ADDED: New routes for the password reset flow */}
+              <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" /> : <ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={isAuthenticated ? <Navigate to="/" /> : <ResetPasswordPage />} />
 
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/add" element={<ProtectedRoute><AddMedicinePage /></ProtectedRoute>} />

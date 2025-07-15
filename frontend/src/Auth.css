@@ -1,41 +1,46 @@
 /* frontend/src/Auth.css */
 
-/* --- Clean, Centered Auth Layout --- */
+/* --- Main Auth Layout --- */
 .auth-layout-premium {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  /* The background is now the simple, theme-aware color from App.css */
   background-color: var(--background-color);
   transition: background-color 0.3s ease;
 }
 
-/* --- Solid, Elevated Form Card --- */
+/* --- Elevated Form Card --- */
 .auth-card {
   position: relative;
   width: 100%;
   max-width: 420px;
-  /* Use solid theme colors for a clean look */
   background: var(--card-background);
   border: 1px solid var(--border-color);
   border-radius: 1.5rem;
   padding: 2.5rem;
-  /* A more defined shadow to lift the card off the page */
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   transition: background-color 0.3s, border-color 0.3s;
 }
 
-/* --- Form Content Styling --- */
+/* --- Card Header & Content --- */
+.auth-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .auth-card-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
 .auth-card-header .logo-icon {
-  display: inline-block;
-  padding: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
   background: var(--primary-color);
   color: var(--text-on-primary);
   border-radius: 50%;
@@ -47,22 +52,31 @@
 .auth-card-header .auth-title {
   font-size: 1.75rem;
   font-weight: 700;
-  /* Use theme text color */
   color: var(--text-primary);
 }
 
+.auth-card-header .auth-subtitle {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+/* --- Form & Input Styles --- */
 .auth-form .form-group {
   margin-bottom: 1.25rem;
 }
 
 .auth-form .form-group label {
-  font-weight: 600; /* Bolder label */
+  font-weight: 600;
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
+.input-with-icon {
+  position: relative;
+}
+
 .input-with-icon input {
-  /* Use theme input colors */
   background: var(--input-background);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -79,7 +93,16 @@
 }
 
 .input-with-icon svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--placeholder-color);
+  transition: color 0.2s;
+}
+
+.input-with-icon input:focus + svg {
+  color: var(--primary-color);
 }
 
 /* --- Buttons --- */
@@ -93,36 +116,23 @@
   background: var(--primary-color);
   color: var(--text-on-primary);
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
-  box-shadow: 0 4px 14px 0 var(--primary-color);
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+}
+
+body.dark .btn-auth-premium {
+    box-shadow: 0 4px 14px 0 rgba(100, 255, 218, 0.3);
 }
 
 .btn-auth-premium:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px 0 var(--primary-color);
+  box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.5);
 }
 
-.btn-social {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border-color);
-  background: var(--card-background);
-  color: var(--text-secondary);
-  transition: all 0.2s;
+body.dark .btn-auth-premium:hover:not(:disabled) {
+    box-shadow: 0 6px 20px 0 rgba(100, 255, 218, 0.4);
 }
 
-.btn-social:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  background: var(--background-color);
-}
-
+/* --- Social Login & Dividers --- */
 .auth-divider {
   display: flex;
   align-items: center;
@@ -140,30 +150,27 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.auth-divider:not(:empty)::before {
-  margin-right: .5em;
-}
+.auth-divider:not(:empty)::before { margin-right: .5em; }
+.auth-divider:not(:empty)::after { margin-left: .5em; }
 
-.auth-divider:not(:empty)::after {
-  margin-left: .5em;
-}
-
-/* --- Links --- */
+/* --- Links & Footer --- */
 .auth-options {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     font-size: 0.875rem;
     margin-top: 1rem;
 }
 
-.auth-options a {
-    color: var(--text-secondary);
+.auth-options a,
+.auth-footer-link a {
+    color: var(--primary-color);
     text-decoration: none;
+    font-weight: 600;
 }
 
-.auth-options a:hover {
+.auth-options a:hover,
+.auth-footer-link a:hover {
     text-decoration: underline;
-    color: var(--primary-color);
 }
 
 .auth-footer-link {
@@ -172,18 +179,9 @@
   color: var(--text-secondary);
 }
 
-.auth-footer-link a {
-  font-weight: 600;
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.auth-footer-link a:hover {
-    text-decoration: underline;
-}
-
+/* --- Error Messages --- */
 .error-message {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: var(--danger-hover-bg, rgba(239, 68, 68, 0.1));
   color: var(--danger-color);
   border: 1px solid var(--danger-color);
   padding: 0.75rem 1rem;
@@ -192,12 +190,12 @@
   font-weight: 600;
   text-align: center;
 }
-/* Add this to the end of frontend/src/Auth.css */
 
-.input-with-icon {
-  position: relative;
+body.dark {
+    --danger-hover-bg: rgba(255, 121, 198, 0.1);
 }
 
+/* --- Password Toggle Button --- */
 .password-toggle-btn {
   position: absolute;
   right: 0;
@@ -214,4 +212,27 @@
 
 .password-toggle-btn:hover {
   color: var(--text-primary);
+}
+
+/* --- Styles for the "Resend Email" feature --- */
+.resend-container {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--primary-color);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: 600;
+}
+
+.btn-link:hover {
+    color: var(--primary-hover);
 }
