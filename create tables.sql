@@ -168,3 +168,5 @@ ADD COLUMN day_interval INT NULL;
 
 ALTER TABLE users
 ADD COLUMN timezone VARCHAR(255) NULL;
+ALTER TABLE medicines
+ADD COLUMN method VARCHAR(255) DEFAULT 'pill';

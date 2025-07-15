@@ -2,6 +2,7 @@
 
 import db from '../config/db.js';
 
+// ... (getReminders, addReminder functions remain the same)
 /**
  * @desc    Get all reminders for the logged-in user
  * @route   GET /api/reminders
@@ -50,8 +51,10 @@ export const addReminder = async (req, res) => {
     }
 };
 
+
 /**
- * @desc    Update a reminder's status and log the action to history
+ * ✅ UPDATED: This function now automatically decrements medicine quantity.
+ * @desc    Update a reminder's status, log the action, and update inventory.
  * @route   PUT /api/reminders/:id
  * @access  Private
  */
@@ -61,14 +64,13 @@ export const updateReminder = async (req, res) => {
     const { medicine_id, reminder_time, status, frequency, week_days, day_interval } = req.body;
 
     try {
-        // First, get the reminder to verify ownership and get medicine_id
         const [reminders] = await db.query('SELECT * FROM reminders WHERE id = ? AND user_id = ?', [reminderId, userId]);
         if (reminders.length === 0) {
             return res.status(404).json({ message: 'Reminder not found or unauthorized.' });
         }
         const reminderToUpdate = reminders[0];
 
-        // Build the dynamic update query
+        // Build the dynamic update query for the reminder
         const fields = [];
         const values = [];
         if (medicine_id) { fields.push('medicine_id = ?'); values.push(medicine_id); }
@@ -90,7 +92,26 @@ export const updateReminder = async (req, res) => {
             await db.query(sql, values);
         }
 
-        // If the status was updated to 'taken' or 'skipped', log it to dose_history.
+        // ✅ NEW LOGIC: If status is 'taken', update the medicine quantity.
+        if (status === 'taken') {
+            const [medicines] = await db.query('SELECT dosage, quantity FROM medicines WHERE id = ?', [reminderToUpdate.medicine_id]);
+            const medicine = medicines[0];
+
+            if (medicine && medicine.quantity !== null) {
+                // Parse the number from the dosage string (e.g., "2 pills" -> 2)
+                const dosageString = medicine.dosage || '1';
+                const match = dosageString.match(/\d+/);
+                const amountToDecrement = match ? parseInt(match[0], 10) : 1;
+
+                // Decrement quantity, ensuring it doesn't go below zero
+                const newQuantity = Math.max(0, medicine.quantity - amountToDecrement);
+                
+                await db.query('UPDATE medicines SET quantity = ? WHERE id = ?', [newQuantity, reminderToUpdate.medicine_id]);
+                console.log(`Decremented quantity for medicine ID ${reminderToUpdate.medicine_id} by ${amountToDecrement}. New quantity: ${newQuantity}`);
+            }
+        }
+
+        // Log the action to dose_history (for both 'taken' and 'skipped')
         if (status && (status === 'taken' || status === 'skipped')) {
             await db.query(
                 'INSERT INTO dose_history (user_id, medicine_id, reminder_id, status) VALUES (?, ?, ?, ?)',
@@ -108,7 +129,7 @@ export const updateReminder = async (req, res) => {
     }
 };
 
-
+// ... (deleteReminder and getDoseHistory functions remain the same)
 /**
  * @desc    Delete a reminder
  * @route   DELETE /api/reminders/:id
