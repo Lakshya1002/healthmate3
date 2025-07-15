@@ -61,6 +61,7 @@ export const fetchReminders = () => api.get('/reminders');
 export const addReminder = (reminderData) => api.post('/reminders', reminderData);
 export const updateReminder = (id, reminderData) => api.put(`/reminders/${id}`, reminderData);
 export const deleteReminder = (id) => api.delete(`/reminders/${id}`);
+export const fetchDoseHistory = () => api.get('/reminders/history');
 
 // --- Push Notifications ---
 export const getVapidPublicKey = () => api.get('/notifications/vapid-public-key');

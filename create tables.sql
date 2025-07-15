@@ -90,6 +90,21 @@ CREATE TABLE push_subscriptions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- This command creates a new table to store a permanent log of every
+-- dose that is marked as 'taken' or 'skipped'.
+CREATE TABLE dose_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  medicine_id INT NOT NULL,
+  reminder_id INT NOT NULL,
+  status ENUM('taken', 'skipped') NOT NULL,
+  logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE,
+  FOREIGN KEY (reminder_id) REFERENCES reminders(id) ON DELETE CASCADE
+);
+
 
 select * from users;
 select * from health_logs;

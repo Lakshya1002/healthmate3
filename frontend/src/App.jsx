@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pill, LayoutDashboard, PlusCircle, Info, Mail, HeartPulse, Bell, LogOut, User, BellRing } from 'lucide-react';
+// ✅ ADDED: History icon
+import { Pill, LayoutDashboard, PlusCircle, Info, Mail, HeartPulse, Bell, LogOut, User, BellRing, History } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import Dashboard from './pages/Dashboard';
@@ -16,8 +17,9 @@ import RemindersPage from './pages/remindersPage';
 import AddReminderPage from './pages/AddReminderPage';
 import EditReminderPage from './pages/EditReminderPage';
 import ProfilePage from './pages/ProfilePage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage'; // ✅ IMPORT
-import ResetPasswordPage from './pages/ResetPasswordPage';   // ✅ IMPORT
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import HistoryPage from './pages/HistoryPage'; // ✅ IMPORT the new page
 import ThemeToggle from './components/ui/ThemeToggle';
 
 import { useAuth } from './context/authContext';
@@ -78,7 +80,6 @@ function App() {
     return children;
   };
   
-  // ✅ UPDATED: Include the new password reset paths
   const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password'].some(path => location.pathname.startsWith(path));
 
   return (
@@ -94,6 +95,7 @@ function App() {
             <NavLink to="/add" icon={<PlusCircle size={20} />}>Add Medicine</NavLink>
             <NavLink to="/reminders" icon={<Bell size={20} />}>Reminders</NavLink> 
             <NavLink to="/health-log" icon={<HeartPulse size={20} />}>Health Logs</NavLink>
+            <NavLink to="/history" icon={<History size={20} />}>History</NavLink> {/* ✅ ADDED new nav link */}
             <NavLink to="/about" icon={<Info size={20} />}>About</NavLink>
             <NavLink to="/contact" icon={<Mail size={20} />}>Contact</NavLink>
             <NavLink to="/profile" icon={<User size={20} />}>Profile</NavLink>
@@ -124,7 +126,6 @@ function App() {
             <Routes location={location} key={location.pathname}>
               <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
               <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <SignupPage />} />
-              {/* ✅ ADDED: New routes for the password reset flow */}
               <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" /> : <ForgotPasswordPage />} />
               <Route path="/reset-password/:token" element={isAuthenticated ? <Navigate to="/" /> : <ResetPasswordPage />} />
 
@@ -134,6 +135,7 @@ function App() {
               <Route path="/reminders/add" element={<ProtectedRoute><AddReminderPage /></ProtectedRoute>} />
               <Route path="/reminders/edit/:id" element={<ProtectedRoute><EditReminderPage /></ProtectedRoute>} />
               <Route path="/health-log" element={<ProtectedRoute><HealthLogPage /></ProtectedRoute>} />
+              <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} /> {/* ✅ ADDED new route */}
               <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
               <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
