@@ -170,3 +170,5 @@ ALTER TABLE users
 ADD COLUMN timezone VARCHAR(255) NULL;
 ALTER TABLE medicines
 ADD COLUMN method VARCHAR(255) DEFAULT 'pill';
+ALTER TABLE dose_history 
+MODIFY COLUMN status ENUM('taken', 'skipped', 'missed') NOT NULL;
