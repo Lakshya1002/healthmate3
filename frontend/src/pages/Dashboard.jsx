@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
-import { fetchMedicines, fetchMedicineStats, refillMedicine } from '../api';
+// ✅ ADDED: Import fetchDoseHistory
+import { fetchMedicines, fetchMedicineStats, refillMedicine, fetchDoseHistory } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -16,6 +17,7 @@ import StatCard from '../components/StatCard';
 import Button from '../components/ui/Button';
 import ActionItemsCard from '../components/ActionItemsCard';
 import RefillModal from '../components/RefillModal';
+import AdherenceScoreCard from '../components/AdherenceScoreCard'; // ✅ IMPORT the new card
 
 import { Pill, Check, Clock, Search, List, LayoutGrid, Plus } from 'lucide-react';
 
@@ -25,6 +27,7 @@ const Dashboard = () => {
 
     const [medicines, setMedicines] = useState([]);
     const [stats, setStats] = useState({ totalMedicines: 0, activeMedicines: 0, completedMedicines: 0 });
+    const [doseHistory, setDoseHistory] = useState([]); // ✅ ADDED: State for dose history
     const [isLoading, setIsLoading] = useState(true);
     
     const [activeTab, setActiveTab] = useState('active');
@@ -39,12 +42,15 @@ const Dashboard = () => {
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [medsRes, statsRes] = await Promise.all([
+            // ✅ UPDATED: Fetch all necessary data in parallel
+            const [medsRes, statsRes, historyRes] = await Promise.all([
                 fetchMedicines(),
                 fetchMedicineStats(),
+                fetchDoseHistory(),
             ]);
             setMedicines(medsRes.data);
             setStats(statsRes.data);
+            setDoseHistory(historyRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -125,16 +131,21 @@ const Dashboard = () => {
                     Add Medicine
                 </Button>
             </div>
+            
+            {/* ✅ ADDED: A new grid layout for the top section of the dashboard */}
+            <div className="dashboard-top-grid">
+                <AdherenceScoreCard history={doseHistory} />
+                <div className="stat-cards-container">
+                    <StatCard icon={<Pill size={28} />} value={stats.activeMedicines || 0} label="Active" onClick={() => setActiveTab('active')} isActive={activeTab === 'active'} />
+                    <StatCard icon={<Check size={28} />} value={stats.totalMedicines || 0} label="All Medicines" onClick={() => setActiveTab('all')} isActive={activeTab === 'all'} />
+                    <StatCard icon={<Clock size={28} />} value={stats.completedMedicines || 0} label="Past" onClick={() => setActiveTab('past')} isActive={activeTab === 'past'} />
+                </div>
+            </div>
+
 
             <AnimatePresence>
                 <ActionItemsCard lowStockItems={lowStockItems} onRefill={(med) => setRefillingMedicine(med)} />
             </AnimatePresence>
-            
-            <div className="stat-cards-container">
-                <StatCard icon={<Pill size={28} />} value={stats.activeMedicines || 0} label="Active" onClick={() => setActiveTab('active')} isActive={activeTab === 'active'} />
-                <StatCard icon={<Check size={28} />} value={stats.totalMedicines || 0} label="All Medicines" onClick={() => setActiveTab('all')} isActive={activeTab === 'all'} />
-                <StatCard icon={<Clock size={28} />} value={stats.completedMedicines || 0} label="Past" onClick={() => setActiveTab('past')} isActive={activeTab === 'past'} />
-            </div>
 
             <div className="card">
                 <div className="controls-header">

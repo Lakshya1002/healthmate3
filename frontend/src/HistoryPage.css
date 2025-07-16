@@ -1,4 +1,4 @@
-/* frontend/src/HistoryPage.css (NEW FILE) */
+/* frontend/src/HistoryPage.css */
 
 .history-layout {
     display: grid;
@@ -67,17 +67,16 @@ body.dark .react-calendar__tile--now {
 }
 
 /* Custom day styles */
-.day-taken {
-    background-color: rgba(34, 197, 94, 0.2); /* success-color with opacity */
-}
-.day-skipped {
-    background-color: rgba(245, 158, 11, 0.2); /* warning-color with opacity */
-}
+.day-taken { background-color: rgba(34, 197, 94, 0.2); }
+.day-skipped { background-color: rgba(245, 158, 11, 0.2); }
+.day-missed { background-color: rgba(239, 68, 68, 0.2); }
+
 
 /* Legend styling */
 .legend {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 1.5rem;
     margin-top: 1.5rem;
     padding-top: 1rem;
@@ -99,6 +98,7 @@ body.dark .react-calendar__tile--now {
 }
 .legend .dot.taken { background-color: rgba(34, 197, 94, 0.5); }
 .legend .dot.skipped { background-color: rgba(245, 158, 11, 0.5); }
+.legend .dot.missed { background-color: rgba(239, 68, 68, 0.5); }
 
 
 /* --- Details Panel Styling --- */
@@ -132,19 +132,16 @@ body.dark .react-calendar__tile--now {
     background-color: var(--background-color);
 }
 
-.dose-item .icon {
-    flex-shrink: 0;
-}
-
+.dose-item .icon { flex-shrink: 0; }
 .dose-item.status-taken .icon { color: var(--success-color); }
 .dose-item.status-skipped .icon { color: var(--warning-color); }
+.dose-item.status-missed .icon { color: var(--danger-color); }
 
-.dose-info .medicine-name {
-    font-weight: 600;
-}
+.dose-info .medicine-name { font-weight: 600; }
 .dose-info .status-label {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    text-transform: capitalize;
 }
 
 .empty-details {
@@ -156,4 +153,44 @@ body.dark .react-calendar__tile--now {
 .empty-details svg {
     margin-bottom: 1rem;
     opacity: 0.5;
+}
+
+/* --- Adherence Score Card CSS --- */
+.adherence-score-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.adherence-score-card .card-header svg {
+    color: var(--primary-color);
+}
+.adherence-score-card .card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+.score-display {
+    text-align: center;
+    margin: 1rem 0;
+}
+.score-percentage {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+.score-subtitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.score-description {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 1.5rem;
 }

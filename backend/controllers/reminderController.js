@@ -2,7 +2,6 @@
 
 import db from '../config/db.js';
 
-// ... (getReminders, addReminder functions remain the same)
 /**
  * @desc    Get all reminders for the logged-in user
  * @route   GET /api/reminders
@@ -51,9 +50,7 @@ export const addReminder = async (req, res) => {
     }
 };
 
-
 /**
- * ✅ UPDATED: This function now automatically decrements medicine quantity.
  * @desc    Update a reminder's status, log the action, and update inventory.
  * @route   PUT /api/reminders/:id
  * @access  Private
@@ -92,7 +89,7 @@ export const updateReminder = async (req, res) => {
             await db.query(sql, values);
         }
 
-        // ✅ NEW LOGIC: If status is 'taken', update the medicine quantity.
+        // If status is 'taken', update the medicine quantity.
         if (status === 'taken') {
             const [medicines] = await db.query('SELECT dosage, quantity FROM medicines WHERE id = ?', [reminderToUpdate.medicine_id]);
             const medicine = medicines[0];
@@ -129,7 +126,6 @@ export const updateReminder = async (req, res) => {
     }
 };
 
-// ... (deleteReminder and getDoseHistory functions remain the same)
 /**
  * @desc    Delete a reminder
  * @route   DELETE /api/reminders/:id
