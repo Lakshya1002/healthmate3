@@ -71,14 +71,14 @@ const ContactPage = () => {
                             <div className="icon"><Phone size={20} /></div>
                             <div className="details">
                                 <h4>Call Us</h4>
-                                <p>+1 (555) 123-4567</p>
+                                <p>+91 9350491254</p>
                             </div>
                         </motion.li>
                         <motion.li className="contact-info-item" variants={itemVariants}>
                             <div className="icon"><MapPin size={20} /></div>
                             <div className="details">
-                                <h4>Our Office</h4>
-                                <p>123 Health St, Wellness City, 12345</p>
+                                
+                                
                             </div>
                         </motion.li>
                     </ul>

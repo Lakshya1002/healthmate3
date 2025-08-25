@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from './ui/Button';
-import { getMedicineSuggestions } from '../api'; // ✅ Import our new function
+import { getMedicineSuggestions } from '../api'; 
+import { Pill, Calendar, Package, ArrowLeft, Send, Syringe, Bot as SyrupIcon, Tablets, Repeat, HelpCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const MedicineForm = ({ onSubmit, initialData = {}, onCancel, submitText = 'Submit' }) => {
     const [formData, setFormData] = useState({
@@ -14,10 +16,12 @@ const MedicineForm = ({ onSubmit, initialData = {}, onCancel, submitText = 'Subm
         notes: '',
         quantity: '',
         refill_threshold: '',
+        method: 'pill', // ✅ NEW: Add method to form state
     });
     
     const [suggestions, setSuggestions] = useState([]);
     const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+    const [otherMethodText, setOtherMethodText] = useState(''); // ✅ NEW: State for other method text
 
     useEffect(() => {
         setFormData({
@@ -29,15 +33,19 @@ const MedicineForm = ({ onSubmit, initialData = {}, onCancel, submitText = 'Subm
             notes: initialData.notes || '',
             quantity: initialData.quantity || '',
             refill_threshold: initialData.refill_threshold || '',
+            method: initialData.method || 'pill', // ✅ NEW: Set initial method
         });
-    }, [initialData.id, initialData.name]);
+        // ✅ NEW: If the initial method is not a standard one, set the otherMethodText
+        if (initialData.method && !['pill', 'tablet', 'syrup', 'injection'].includes(initialData.method)) {
+             setOtherMethodText(initialData.method);
+        }
+    }, [initialData.id, initialData.name, initialData.method]);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // ✅ UPDATED: Fetch suggestions from our own backend
     const fetchSuggestions = useCallback(async (query) => {
-        if (query.length < 2) { // Can be 2 now since it's faster
+        if (query.length < 2) {
             setSuggestions([]);
             return;
         }
@@ -58,6 +66,18 @@ const MedicineForm = ({ onSubmit, initialData = {}, onCancel, submitText = 'Subm
             fetchSuggestions(value);
         }
     };
+    
+    // ✅ NEW: Handle method change
+    const handleMethodChange = (method) => {
+        setFormData(prev => ({ ...prev, method }));
+        if (method !== 'other') {
+            setOtherMethodText('');
+        }
+    };
+
+    const handleOtherMethodChange = (e) => {
+        setOtherMethodText(e.target.value);
+    };
 
     const handleSuggestionClick = (name) => {
         setFormData(prev => ({ ...prev, name }));
@@ -69,19 +89,59 @@ const MedicineForm = ({ onSubmit, initialData = {}, onCancel, submitText = 'Subm
         e.preventDefault();
         setLoading(true);
         setError('');
+        
+        // Finalize the method value before submitting
+        const finalMethod = formData.method === 'other' ? otherMethodText : formData.method;
+        if (formData.method === 'other' && !finalMethod) {
+            setError('Please specify the intake method.');
+            setLoading(false);
+            return;
+        }
+
         try {
-            await onSubmit(formData);
+            await onSubmit({ ...formData, method: finalMethod });
         } catch (err) {
             setError(err.response?.data?.message || 'An error occurred.');
         } finally {
             setLoading(false);
         }
     };
+    
+     const methodButtons = [
+        { key: 'pill', icon: <Pill />, label: 'Pill' },
+        { key: 'tablet', icon: <Tablets />, label: 'Tablet' },
+        { key: 'syrup', icon: <SyrupIcon />, label: 'Syrup' },
+        { key: 'injection', icon: <Syringe />, label: 'Injection' },
+        { key: 'other', icon: <HelpCircle />, label: 'Other' },
+    ];
 
     return (
         <form onSubmit={handleSubmit} className="form-grid">
             {error && <div className="error-message" style={{ gridColumn: '1 / -1' }}>{error}</div>}
             
+            {/* ✅ NEW: Add method selection buttons */}
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>Method of Intake</label>
+                <div className="method-selector">
+                    {methodButtons.map(btn => (
+                        <button 
+                            type="button" 
+                            key={btn.key} 
+                            className={`method-btn ${formData.method === btn.key ? 'active' : ''}`} 
+                            onClick={() => handleMethodChange(btn.key)}
+                        >
+                            {btn.icon}<span>{btn.label}</span>
+                        </button>
+                    ))}
+                </div>
+                 {formData.method === 'other' && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="other-method-input">
+                        <label htmlFor="otherMethodText">Please specify the method</label>
+                        <input id="otherMethodText" type="text" value={otherMethodText} onChange={handleOtherMethodChange} required />
+                    </motion.div>
+                )}
+            </div>
+
             <div className="form-group" style={{ gridColumn: '1 / -1', position: 'relative' }}>
                 <label htmlFor="name">Medicine Name</label>
                 <input 
